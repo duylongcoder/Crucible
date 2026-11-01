@@ -364,8 +364,8 @@ Quy tắc:
 # Một nhóm test
 <Unity> -batchmode -nographics -projectPath . -runTests -testPlatform EditMode -testFilter Alchemy.Tests.EditMode.Recipe -testResults results/recipe.xml -quit
 
-# Build WebGL (cần build script trong Editor/, chưa có)
-<Unity> -batchmode -nographics -projectPath . -buildTarget WebGL -executeMethod <BuildScript.WebGL> -quit
+# Build WebGL → Builds/WebGL (Assets/Editor/BuildScript.cs; exit 1 khi build hỏng)
+<Unity> -batchmode -nographics -projectPath . -buildTarget WebGL -executeMethod BuildScript.WebGL -quit
 ```
 
 ## 10. Câu hỏi mở (không tự quyết, hỏi trước)
