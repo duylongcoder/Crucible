@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crucible M3 Greybox</title>
+<style>
+  :root { --bg:#141210; --panel:#29241f; --slot:#4d453b; --empty:#38332e; --sel:#d99e40; --act:#f27326; --brewed:#59664d; --scrap:#594040; --text:#f2ebd9; --muted:#b8ad99; --line:#5a5046; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#0c0b0a; color:var(--text); font:15px/1.5 system-ui, sans-serif; padding:24px 16px; }
+  main { max-width:1280px; margin:0 auto; }
+  h1 { font-size:22px; margin:0 0 4px; }
+  p.lead { color:var(--muted); margin:0 0 20px; }
+  nav { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+  nav button { background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:6px; padding:6px 12px; cursor:pointer; font:inherit; }
+  nav button[aria-pressed="true"] { background:var(--sel); color:#1a1410; border-color:var(--sel); }
+  figure { margin:0; }
+  svg { width:100%; height:auto; display:block; border:1px solid var(--line); border-radius:8px; background:var(--bg); }
+  figcaption { color:var(--muted); margin-top:10px; }
+  svg text { fill:var(--text); font-family:system-ui, sans-serif; }
+  .muted { fill:var(--muted); }
+  .note { fill:#7fc4ff; font-size:20px; }
+  .note-line { stroke:#7fc4ff; stroke-dasharray:6 6; stroke-width:2; fill:none; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Crucible — M3 greybox (1920×1080)</h1>
+  <p class="lead">Mockup bố cục từng màn của scene <code>Main</code>. Khung cố định: HUD trên cùng, Túi bên trái, vùng Stage đổi theo phase. Chú thích xanh = tên object trong Hierarchy.</p>
+  <nav id="tabs"></nav>
+  <figure>
+    <svg id="frame" viewBox="0 0 1920 1080" role="img" aria-label="Mockup màn hình"></svg>
+    <figcaption id="caption"></figcaption>
+  </figure>
+</main>
+<script>
+const C = { panel:'#29241f', slot:'#4d453b', empty:'#38332e', sel:'#d99e40', act:'#f27326', brewed:'#59664d', grid:'#401f0f' };
+const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const rect = (x,y,w,h,fill,rx=4) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${fill}" rx="${rx}"/>`;
+const text = (x,y,s,size=24,anchor='start',cls='') => `<text x="${x}" y="${y}" font-size="${size}" text-anchor="${anchor}" class="${cls}">${esc(s)}</text>`;
+const btn = (x,y,w,h,label,fill=C.slot) => rect(x,y,w,h,fill) + text(x+w/2,y+h/2+9,label,26,'middle');
+const item = (x,y,w,h,name,sub,fill=C.slot) => rect(x,y,w,h,fill) + text(x+w/2,y+h/2-2,name,20,'middle') + (sub ? text(x+w/2,y+h/2+20,sub,14,'middle','muted') : '');
+const note = (x,y,label,tx,ty) => `<path class="note-line" d="M${tx} ${ty} L${x} ${y}"/>` + text(x+6,y-6,label,20,'start','note');
+
+function chrome(phase, bag, detail, selected=-1) {
+  let s = rect(20,10,1880,80,C.panel);
+  s += text(40,60,`Mùa 2/8   ·   ${phase}   ·   Lượt 1/3   ·   18 vàng   ·   Uy tín ♥♥♡`,26);
+  s += text(1880,46,'Mùa này: Hội chợ — Giá bán +25%',20,'end') + text(1880,72,'seed 2618425',14,'end','muted');
+  s += rect(20,110,480,950,C.panel) + text(34,150,`Túi ${bag.length}/14`,28);
+  bag.forEach((b,i) => { const x = 30 + (i%3)*156, y = 172 + Math.floor(i/3)*66; s += item(x,y,148,58,b[0],b[1], i===selected ? C.sel : (b[2]||C.slot)); });
+  s += detail.map((l,i) => text(34,700+i*28,l,20,'start', i ? '' : '')).join('');
+  return s;
+}
+const BAG = [['Quặng sắt','Khoáng · cấp 1'],['Quặng sắt','Khoáng · cấp 1'],['Than đá','Khoáng · cấp 1'],['Than đá','Khoáng · cấp 1'],['Quặng đồng','Khoáng · cấp 1'],['Thiếc','Khoáng · cấp 2'],['Hàn the','Phụ gia · cấp 1'],['Kính soi thường','Kính soi · cấp 1'],['Thép','Khoáng · cấp 3',C.brewed]];
+const stage = (title) => rect(520,110,1380,950,C.panel) + text(1210,175,title,40,'middle');
+
+const screens = [
+ { id:'Decree', label:'Chiếu chỉ', cap:'Decree: đối thủ (tên, loại trận, ★ định tính) và modifier Mùa này / Mùa sau. Không có con số Power.',
+   draw:() => chrome('Chiếu chỉ',BAG,['Chọn vật phẩm để xem.']) + stage('Chiếu chỉ — Mùa 2') +
+     ['Nhà vua truyền: cuối Mùa này, binh lính sẽ ra thi đấu.','','Đối thủ: Vệ binh bến sông','Loại trận: Thi đấu','Độ khó: ★☆☆☆☆','','Modifier Mùa này: Hội chợ — Giá bán +25%','Modifier Mùa sau: không có'].map((l,i)=>text(640,280+i*40,l,28)).join('') +
+     btn(1540,950,300,80,'Mở Chợ') + note(1500,920,'Decree/Continue',1540,950) + note(560,1050,'Bag (BagView, DropZone)',300,1000) },
+ { id:'Market', label:'Chợ', cap:'Market: 6 món tier ≤ 3 (giá đã nhân hệ số Mùa). Bấm vật phẩm trong Túi để thấy nút Bán.',
+   draw:() => chrome('Chợ',BAG,['Thép','Khoáng · cấp 3','Chưa soi.'],8) + btn(30,960,148,50,'Bán (+12)') + stage('Chợ — trước lượt nung 1/3') +
+     [['Quặng sắt','3 vàng'],['Quặng đồng','4 vàng'],['Kính soi tinh','14 vàng'],['Than đá','2 vàng'],['Thiếc','7 vàng'],['Bột thạch anh','9 vàng']].map((o,i)=>item(600+(i%3)*410,240+Math.floor(i/3)*130,400,120,o[0],o[1])).join('') +
+     btn(560,950,300,80,'Đổi hàng (2 vàng)') + btn(1220,950,300,80,'Bỏ qua lượt') + btn(1540,950,300,80,'Vào lò nung') +
+     note(600,520,'Market/Offers (ButtonList)',800,480) + note(30,1050,'Bag/Actions',100,1010) },
+ { id:'Furnace', label:'Lò nung', cap:'Furnace (Placing): kéo từ Túi lên ô, kéo giữa các ô để đổi chỗ, kéo về Túi để gỡ. Lưới đọc theo hàng.',
+   draw:() => { let s = chrome('Lò nung',BAG.slice(2),['Kéo vật phẩm lên lưới, hoặc','chọn rồi bấm ô trống.']) + stage('Lượt nung 1/3: xếp nguyên liệu rồi bấm Nung.');
+     s += rect(600,285,600,600,C.grid);
+     const cells = ['Quặng sắt','Hàn the','Than đá','','','','','',''];
+     cells.forEach((c,i)=>{ const x=605+(i%3)*200, y=290+Math.floor(i/3)*200; s += c ? item(x,y,190,190,c,'') : rect(x,y,190,190,C.empty); });
+     s += text(1260,280,'Lưới đọc trái → phải, trên → dưới. Ô trống là một nhịp chờ.',24);
+     [1,2,3].forEach(n=>s+=btn(1260+(n-1)*130,880,110,70,n+'×', n===1?C.sel:C.slot));
+     s += btn(1220,950,300,80,'Bỏ qua lượt') + btn(1540,950,300,80,'Nung');
+     return s + note(600,270,'Furnace/Grid/Cell0..8 (ItemButton)',700,290) + note(1260,860,'Speed1..3',1300,880); } },
+ { id:'Brewing', label:'Đang nung', cap:'Brewing: phát lại BrewLog mỗi tick (3s ở 1×). Thành phẩm ẩn khỏi Túi tới khi phát xong; nút Tiếp tục chỉ hiện sau tick cuối.',
+   draw:() => { let s = chrome('Đang nung',BAG.slice(3,8),[]) + stage('Đang nung…'); s += rect(600,285,600,600,C.grid);
+     const cells = ['Quặng sắt','chờ','Than đá','','','','','',''];
+     cells.forEach((c,i)=>{ const x=605+(i%3)*200, y=290+Math.floor(i/3)*200; s += c ? item(x,y,190,190,c,'', i===1?C.act:C.empty) : rect(x,y,190,190,C.empty); });
+     s += ['Nhịp 1: nạp Quặng sắt','Nhịp 2: chờ'].map((l,i)=>text(1260,280+i*32,l,24)).join('');
+     [1,2,3].forEach(n=>s+=btn(1260+(n-1)*130,880,110,70,n+'×', n===2?C.sel:C.slot));
+     return s + note(1260,360,'Furnace/Log',1300,320); } },
+ { id:'Workshop', label:'Xưởng / Dâng', cap:'Workshop: soi bằng Kính (chỉ hiện dòng đã lộ). Offering: chọn thành phẩm rồi bấm "Dâng khoáng này".',
+   draw:() => chrome('Xưởng',BAG,['Thép','Khoáng · cấp 3','Đã soi:','• Phản đòn: 3'],8) + btn(30,960,148,50,'Soi bằng…') + stage('Xưởng') +
+     ['Hết 3 lượt nung. Dùng Kính soi để xem thuộc tính ẩn của thành phẩm.','Xưởng không mua bán.','','Đối thủ: Vệ binh bến sông — Thi đấu ★☆☆☆☆'].map((l,i)=>text(640,280+i*40,l,28)).join('') +
+     btn(1540,950,300,80,'Đi dâng') + note(30,690,'Bag/Detail',160,700) },
+ { id:'Battle', label:'Rèn & Trận', cap:'Battle: Dâng → rèn ra loại trang bị (ngẫu nhiên) → Thắng/Thua. Không hiện Power.',
+   draw:() => chrome('Rèn & Trận',BAG.slice(0,8),[]) + rect(520,110,1380,950,C.panel) +
+     ['Dâng: Thép','Lò rèn đỏ lửa…','Rèn ra: Kiếm','Thi đấu với Vệ binh bến sông…'].map((l,i)=>text(1210,240+i*48,l,32,'middle')).join('') +
+     text(1210,800,'THẮNG',120,'middle') + btn(1540,950,300,80,'Tiếp tục') + note(1300,690,'Battle/Verdict',1250,720) },
+ { id:'Spoils', label:'Chiến lợi phẩm', cap:'Spoils: 3 lựa chọn (Nới Túi, Khoáng hiếm…), nhận đúng 1; không có nút bỏ qua.',
+   draw:() => chrome('Chiến lợi phẩm',BAG.slice(0,8),[]) + stage('Chiến lợi phẩm — chọn 1') +
+     [['Nới Túi +2','+2 chỗ trong Túi'],['Bạc ròng','Nhận 1 Bạc (cấp 3)'],['Khoáng hiếm: Thiên thạch','Nhận 1 Thiên thạch (cấp 4)']].map((o,i)=>item(600+i*410,400,400,220,o[0],o[1])).join('') +
+     note(600,380,'Spoils/Choices (ButtonList)',700,400) },
+ { id:'End', label:'Kết thúc', cap:'End: thắng run (hết Mùa 8 còn Uy tín) hoặc trục xuất; nút Run mới.',
+   draw:() => rect(20,10,1880,80,C.panel) + text(40,60,'Mùa 8/8   ·   Kết thúc   ·   Uy tín ♥♡♡',26) + rect(520,110,1380,950,C.panel) +
+     text(1210,370,'Hoàn thành 8 Mùa',72,'middle') + text(1210,470,'Bạn giữ được lòng tin của Nhà vua tới Mùa cuối.',32,'middle') +
+     text(1210,515,'Thắng 5/8 trận, còn 1 Uy tín.',32,'middle') + btn(1540,950,300,80,'Run mới') },
+];
+
+const tabs = document.getElementById('tabs'), frame = document.getElementById('frame'), caption = document.getElementById('caption');
+function show(id) {
+  const s = screens.find(x => x.id === id);
+  frame.innerHTML = s.draw();
+  frame.setAttribute('aria-label', 'Mockup màn ' + s.label);
+  caption.textContent = s.cap;
+  [...tabs.children].forEach(b => b.setAttribute('aria-pressed', b.dataset.id === id));
+}
+screens.forEach(s => { const b = document.createElement('button'); b.textContent = s.label; b.dataset.id = s.id; b.onclick = () => show(s.id); tabs.appendChild(b); });
+show('Furnace');
+</script>
+</body>
+</html>

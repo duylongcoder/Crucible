@@ -20,7 +20,8 @@ namespace Alchemy.Tests.PlayMode
             var view = Object.FindAnyObjectByType<BootView>();
             Assert.That(view, Is.Not.Null);
             Assert.That(view.enabled, Is.True);
-            Assert.That(view.GetComponentInChildren<Text>().text, Does.Contain(GameInfo.Milestone));
+            // Canvas còn chứa UI greybox; nhắm đúng nhãn build.
+            Assert.That(view.transform.Find("BuildLabel").GetComponent<Text>().text, Does.Contain(GameInfo.Milestone));
         }
     }
 }

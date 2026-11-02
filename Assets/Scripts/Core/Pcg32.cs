@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Alchemy.Core
 {
     /// <summary>
@@ -41,6 +43,29 @@ namespace Alchemy.Core
                 if (r >= threshold)
                     return (int)(r % b);
             }
+        }
+
+        /// <summary>Chỉ số rút theo trọng số nguyên (≤ 0 = không bao giờ). Tổng = 0 → -1, không tiêu thụ random.</summary>
+        public int PickWeighted(IReadOnlyList<int> weights)
+        {
+            var total = 0;
+            foreach (var w in weights)
+                if (w > 0)
+                    total += w;
+            if (total == 0)
+                return -1;
+
+            var roll = NextInt(total);
+            for (var i = 0; i < weights.Count; i++)
+            {
+                if (weights[i] <= 0)
+                    continue;
+                if (roll < weights[i])
+                    return i;
+                roll -= weights[i];
+            }
+
+            return -1;
         }
     }
 }

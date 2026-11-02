@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Alchemy.Core
 {
-    public sealed class RecipeMatcher
+    internal sealed class RecipeMatcher
     {
         private readonly List<ItemDef> _products = new List<ItemDef>();
 

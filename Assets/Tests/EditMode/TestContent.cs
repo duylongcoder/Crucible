@@ -3,12 +3,12 @@ using Alchemy.Core;
 namespace Alchemy.Tests.EditMode
 {
     /// <summary>Content nhỏ dựng bằng code cho test Core. Không phải content thật của game.</summary>
-    public static class TestContent
+    internal static class TestContent
     {
         public static readonly BrewRules Rules = new BrewRules(3, 3, magicCapPercent: 90, magicPercentPerTier: 5);
 
-        public static readonly ItemDef Iron = new ItemDef("iron", ItemKind.Mineral, 1);
-        public static readonly ItemDef Coal = new ItemDef("coal", ItemKind.Mineral, 1);
+        public static readonly ItemDef Iron = new ItemDef("iron", ItemKind.Mineral, 1, marketPrice: 4);
+        public static readonly ItemDef Coal = new ItemDef("coal", ItemKind.Mineral, 1, marketPrice: 2);
         public static readonly ItemDef Copper = new ItemDef("copper", ItemKind.Mineral, 2);
 
         public static readonly ItemDef Flux = new ItemDef("flux", ItemKind.Additive, 1, magicChance: 10);
@@ -22,7 +22,7 @@ namespace Alchemy.Tests.EditMode
             new[] { new RecipeSlot("iron"), RecipeSlot.Gap, new RecipeSlot("coal") },
             baseEssence: 6,
             allowedAdditives: new[] { "flux", "salt" },
-            stats: new[] { new RecipeStat("sharpness", 50, 2) }));
+            stats: new[] { new RecipeStat("sharpness", 50, 2) }), marketPrice: 10);
 
         public static readonly ItemDef Bronze = new ItemDef("bronze", ItemKind.Mineral, 3, new Recipe(
             new[] { new RecipeSlot("iron"), RecipeSlot.Gap, RecipeSlot.Gap, new RecipeSlot("coal") },
@@ -33,7 +33,59 @@ namespace Alchemy.Tests.EditMode
             baseEssence: 20,
             allowedAdditives: new[] { "sulfur" }));
 
-        public static readonly ItemDef[] Items = { Iron, Coal, Copper, Flux, Salt, Sulfur, Steel, Bronze, Arcanite };
+        public static readonly ItemDef Lens = new ItemDef("lens", ItemKind.Lens, 1, marketPrice: 3, revealLines: 1);
+        public static readonly ItemDef Meteorite = new ItemDef("meteorite", ItemKind.Mineral, 4, marketPrice: 20);
+
+        public static readonly ItemDef[] Items = { Iron, Coal, Copper, Flux, Salt, Sulfur, Steel, Bronze, Arcanite, Lens, Meteorite };
+
+        /// <summary>
+        /// Run nhỏ: đối thủ mọi Mùa có Power = Quality của Steel (6); trang bị không có trọng số thuộc tính
+        /// nên Power trang bị = Quality. ShopPool cố ý chứa Steel (có Recipe) và Meteorite (tier 4) để kiểm I24.
+        /// </summary>
+        public static RunDef CreateRun(double opponentPower = 6)
+        {
+            var opponents = new OpponentDef[8];
+            for (var i = 0; i < opponents.Length; i++)
+                opponents[i] = new OpponentDef("opp" + i, "Đối thủ " + i, BattleKind.Tournament, opponentPower);
+
+            return new RunDef
+            {
+                Id = "test",
+                Brew = Rules,
+                SeasonsPerRun = 8,
+                BrewsPerSeason = 3,
+                StartReputation = 3,
+                StartGold = 0,
+                BagCapacity = 10,
+                MaxBagCapacity = 14,
+                ShopMaxTier = 3,
+                ShopTierWeights = new[] { 70, 25, 5 },
+                ShopOfferCount = 5,
+                RerollBaseCost = 2,
+                RerollCostStep = 1,
+                PriceFactorMinPercent = 70,
+                PriceFactorMaxPercent = 130,
+                SellPercent = 50,
+                ScrapSellPrice = 1,
+                ModifierChancePercent = 0,
+                ModifierPercentMin = 50,
+                ModifierPercentMax = 300,
+                QualityWeight = 1,
+                StarThresholds = new[] { 10.0, 20.0, 35.0, 55.0 },
+                Items = Items,
+                Scrap = Scrap,
+                ShopPool = new[] { Iron, Coal, Copper, Flux, Salt, Sulfur, Lens, Steel, Meteorite },
+                StarterKit = new[] { Iron, Coal, Lens },
+                Opponents = opponents,
+                Equipment = new[] { new EquipmentDef("plain", "Gậy", 1, new StatWeight[0]) },
+                Rewards = new[]
+                {
+                    new RewardDef("bag", "Nới Túi", RewardKind.BagExpand, amount: 2),
+                    new RewardDef("rare", "Thiên thạch", RewardKind.RareMineral, Meteorite),
+                },
+                Modifiers = new SeasonModifierDef[0],
+            };
+        }
 
         public static Brewer CreateBrewer() => new Brewer(Rules, Items, Scrap);
 

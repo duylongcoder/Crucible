@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Alchemy.Core
 {
-    public static class ProductFactory
+    internal static class ProductFactory
     {
         private static readonly double[] None = System.Array.Empty<double>();
 
@@ -35,7 +35,8 @@ namespace Alchemy.Core
             var recipe = def.Recipe;
             // shortcut: chưa áp Effect của Xúc tác/Thuốc thử (Add/MulPotency, AddEssence); nâng cấp khi có EffectRunner (M2).
             var potency = ScoreCalculator.Potency(None, None);
-            var quality = ScoreCalculator.Quality(new[] { recipe.BaseEssence }, None, None);
+            var essence = ScoreCalculator.Clamp(recipe.BaseEssence, 0);
+            var quality = ScoreCalculator.Quality(new[] { essence }, None, None);
 
             var stats = new List<StatLine> { new StatLine(StatIds.Quality, quality) };
             if (chance.NextInt(100) < MagicChance(feed, rules))
@@ -44,7 +45,7 @@ namespace Alchemy.Core
                 if (chance.NextInt(100) < s.ChancePercent)
                     stats.Add(new StatLine(s.StatId, ScoreCalculator.Clamp(s.Value, 0)));
 
-            return new Product(def, recipe.BaseEssence, potency, stats);
+            return new Product(def, essence, potency, stats);
         }
     }
 }

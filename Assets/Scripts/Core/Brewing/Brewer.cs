@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace Alchemy.Core
 {
     /// <summary>Xử lý trọn một lượt nung ngay lập tức; Presentation phát lại <see cref="BrewLog"/> theo nhịp.</summary>
-    public sealed class Brewer
+    internal sealed class Brewer
     {
         private readonly BrewRules _rules;
         private readonly RecipeMatcher _matcher;

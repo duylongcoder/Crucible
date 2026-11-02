@@ -43,7 +43,7 @@ Pillars ảnh hưởng trực tiếp tới code:
 
 ## 2. Trạng thái hiện tại
 
-- Milestone đang làm: `M1`
+- Milestone đang làm: `M3` (M1, M2 xong; M3 chờ playtest WebGL)
 - Unity: `6000.6.7f1` · Render pipeline: `URP 2D`
 - Unity executable: `/Applications/Unity/Hub/Editor/6000.6.7f1/Unity.app/Contents/MacOS/Unity`
 - Build target: WebGL (chính) + Standalone (dev/test)
@@ -81,6 +81,7 @@ Quy tắc phụ thuộc (không được phá):
 - **Thời gian trong Core là tick rời rạc**, không phải giây. Core xử lý cả lượt nung ngay lập tức; Presentation phát lại `BrewLog` theo nhịp và timescale.
 - Presentation chỉ thấy những gì người chơi được phép biết. Khoảng cách công thức, slot sai, thuộc tính chưa soi, `Power` của trang bị và đối thủ, trọng số trang bị **không** đi qua ranh giới Core → Presentation (trừ `#if ALCHEMY_DEBUG`). Kết quả trận chỉ gồm loại trang bị + Thắng/Thua; đối thủ chỉ lộ tên, loại trận, mức khó định tính.
 - Chỉ `EffectRunner` biết về Effect primitive. Lớp khác không switch theo loại hiệu ứng.
+- Che giấu do compiler đảm bảo: thuộc tính ẩn, `Power`, trọng số, `Recipe` (pattern, phụ gia, Essence) là `internal` trong Core; chỉ `Alchemy.Content`, `Alchemy.Persistence`, `Alchemy.Tests.EditMode`, `Alchemy.Tests.PlayMode` được `InternalsVisibleTo`. **Không** thêm Presentation vào danh sách này.
 
 Lớp chính trong Core: `RunState` (có `ComputeHash()`), `RunStateMachine`, `RecipeMatcher`, `ProductFactory`, `ScoreCalculator`, `Inspector` (Kính soi), `Forge`, `Battle`, `Market`, `SeasonModifiers`, `RewardOffer`, `EffectRunner`, `Economy`, `RngStreams` (PCG32 tự viết), `InvariantChecker`.
 
@@ -351,7 +352,7 @@ Quy tắc:
 - Core không dùng thread/`Task.Run` (WebGL không hỗ trợ đa luồng). Harness chạy song song chỉ ở EditMode/CI.
 - Save trong run: `{ version, seed, runDefId, difficulty, starterKitId, actions[] }` + snapshot đầu mỗi lượt (bắt buộc; replay từ snapshot gần nhất). Meta (Sổ công thức, trạng thái mở khóa, Danh vọng, bậc khó cao nhất) lưu file riêng; vàng, Túi, Uy tín không vào meta.
 - Storage qua interface trong Persistence. Standalone: ghi file tạm rồi rename. WebGL: không dựa vào atomic rename; cần flush IndexedDB sau khi ghi (kiểm tra cơ chế cụ thể theo phiên bản Unity trước khi cài đặt).
-- Presentation: 2D, landscape, Canvas Scaler theo reference 1920×1080; kiểm tra layout ở tỷ lệ khác 16:9 trong trình duyệt. Chỉ phát lại `BrewLog`; dùng `ObjectPool<T>` cho view; không cấp phát trong `Update`.
+- Presentation: 2D, landscape, Canvas Scaler theo reference 1920×1080; kiểm tra layout ở tỷ lệ khác 16:9 trong trình duyệt. Chỉ phát lại `BrewLog`; dùng `ObjectPool<T>` cho view. Không dùng `Update`/`FixedUpdate`/`LateUpdate` để làm mới UI: view vẽ lại theo event (`RefreshAll()` sau mỗi Command), animation/timer dùng coroutine `WaitForSeconds`. Không gọi `GetComponent*`/`transform.Find`/`GameObject.Find` trong code runtime: reference gán sẵn qua `[SerializeField]` (builder hoặc Inspector); chỉ Editor script và test được tìm object.
 - Tên test ví dụ: `Match_WhenOffByOneTick_ProducesScrap`, `Match_WithAdditiveInGap_SameProductAndQuality`, `Match_WhenRequiresMagicAndIngredientNotMagic_ProducesScrap`, `Magic_ChanceSumsInheritanceAndAdditives_CappedAt90`, `BrewLog_WhenFailed_MatchesSuccessUntilResult`, `Place_WhenBrewing_Rejects`, `Inspect_WhenLensSmallerThanStats_RevealsRandomSubset`, `Offering_Always_ConsumesProduct`, `Battle_WhenPowerEqualsOpponent_Wins`, `Reputation_WhenZero_EndsRunExiled`, `Market_NeverOffersTierAboveShopMaxTier`, `Shop_Buy_WhenBagFull_Rejects`, `Shop_SellPrice_IgnoresStats`, `Unlock_WhenBrewed_UnlocksItemAndRecipe`, `Unlock_WhenBought_UnlocksItemOnly`.
 - Simulation harness: `RandomAgent`, `GreedyAgent`; CI 2.000 run/commit, nightly 50.000. Mọi run mô phỏng phải đi tới `RunEnd`.
 
@@ -378,3 +379,14 @@ Nguyên tắc chung (chủ dự án chốt): khi có nhiều phương án, ưu t
 - **Danh vọng quy đổi và giá mở khóa.** Chưa có số.
 - **Độ dài run** (8 × 3 lượt nung + 8 trận, ~30–45 phút?). Cần playtest.
 - **Con số cân bằng** (đọc từ config, không chặn code): sức chứa Túi, `RevealLines` theo cấp Kính soi, giá thị trường, `Power` đối thủ từng Mùa, trần tier "Khoáng hiếm" theo Mùa. Số liệu ma thuật và primitive hiện là tạm, Claude được phép đặt, hiệu chỉnh sau.
+
+## 11. Bàn giao sau mỗi milestone
+
+Ngoài code + test, mỗi milestone có thay đổi scene/UI phải bàn giao thêm (milestone không đụng scene thì ghi "không có thay đổi scene" trong báo cáo):
+
+1. **Mockup UI dạng HTML/SVG**: `Docs/ui/<Milestone>-*.html`, một file tự chứa, 1920×1080, một khung cho mỗi màn, chú thích tên object trong Hierarchy. Mockup vẽ **trước** khi dựng scene để duyệt bố cục, cập nhật lại nếu scene đổi.
+2. **Cấu trúc Hierarchy** của scene đã đổi (cây object, đánh dấu object bật/tắt theo phase).
+3. **Bảng object → script + component**: mỗi object có script hoặc component quan trọng, ghi field serialized đã gán.
+
+Mục 2 và 3 nằm trong `Docs/milestones/<Milestone>.md`. Scene greybox được dựng bằng `Assets/Editor/GreyboxSceneBuilder.cs` (menu **Crucible/Build Greybox UI**); chạy lại sẽ dựng lại cây `Canvas/Game` và `EventSystem`, nên chỉnh tay trong scene phải chuyển ngược vào builder, hoặc bỏ builder khi scene được chỉnh tay.
+
