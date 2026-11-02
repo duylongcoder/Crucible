@@ -43,7 +43,7 @@ Pillars ảnh hưởng trực tiếp tới code:
 
 ## 2. Trạng thái hiện tại
 
-- Milestone đang làm: `M0`
+- Milestone đang làm: `M1`
 - Unity: `6000.6.7f1` · Render pipeline: `URP 2D`
 - Unity executable: `/Applications/Unity/Hub/Editor/6000.6.7f1/Unity.app/Contents/MacOS/Unity`
 - Build target: WebGL (chính) + Standalone (dev/test)
