@@ -26,6 +26,9 @@ namespace Alchemy.Core
             if (s.Bag.Count > s.BagCapacity || s.BagCapacity > def.MaxBagCapacity)
                 return $"I10: Túi {s.Bag.Count}/{s.BagCapacity} (trần {def.MaxBagCapacity}).";
 
+            if (s.CatalystCount > def.CatalystSlots)
+                return $"I10: {s.CatalystCount} Xúc tác (tối đa {def.CatalystSlots}).";
+
             if (s.BrewsUsed < 0 || s.BrewsUsed > def.BrewsPerSeason)
                 return $"I12: {s.BrewsUsed} lượt đã dùng.";
             if (s.Season < 1 || s.Season > def.SeasonsPerRun)

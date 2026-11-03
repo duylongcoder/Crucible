@@ -1,12 +1,11 @@
 using System.Text;
-using Alchemy.Content;
 using Alchemy.Core;
 using UnityEngine;
 
 namespace Alchemy.Presentation
 {
     /// <summary>Chuỗi hiển thị và màu greybox. Chỉ dùng thông tin người chơi được phép biết.</summary>
-    // shortcut: chuỗi viết trong code; chuyển sang data/localization khi có content SO (M4).
+    // shortcut: chuỗi giao diện viết trong code (tên vật phẩm, thuộc tính lấy từ data); chuyển sang localization khi cần đa ngôn ngữ.
     public static class UiText
     {
         public static readonly Color Panel = new Color(0.16f, 0.14f, 0.12f, 0.95f);
@@ -67,15 +66,23 @@ namespace Alchemy.Presentation
 
         public static string Modifier(SeasonModifierDef m) => m == null ? "không có" : $"{m.Name} — {m.Description}";
 
-        public static string Reward(RewardDef r) =>
-            r.Kind == RewardKind.BagExpand ? $"{r.Name}\n<size=16>+{r.Amount} chỗ trong Túi</size>"
-                : $"{r.Name}\n<size=16>Nhận 1 {r.Item.Name} (cấp {r.Item.Tier})</size>";
+        public static string Reward(RewardDef r)
+        {
+            switch (r.Kind)
+            {
+                case RewardKind.BagExpand: return $"{r.Name}\n<size=16>+{r.Amount} chỗ trong Túi</size>";
+                case RewardKind.Catalyst: return $"{r.Name}\n<size=16>{r.Item.Description}</size>";
+                default: return $"{r.Name}\n<size=16>Nhận 1 {r.Item.Name} (cấp {r.Item.Tier})</size>";
+            }
+        }
 
         /// <summary>Chi tiết vật phẩm: chỉ các dòng thuộc tính đã soi.</summary>
-        public static string Detail(Product p)
+        public static string Detail(Product p, System.Func<string, string> statName)
         {
             var sb = new StringBuilder();
             sb.Append(Kind(p.Def.Kind)).Append(" · cấp ").Append(p.Def.Tier);
+            if (p.Def.Description.Length > 0)
+                sb.Append('\n').Append(p.Def.Description);
             if (p.Def.Kind == ItemKind.Lens)
                 sb.Append("\nSoi tối đa ").Append(p.Def.RevealLines).Append(" dòng thuộc tính.");
             if (!p.Def.IsBrewed)
@@ -85,7 +92,7 @@ namespace Alchemy.Presentation
             sb.Append(revealed.Count == 0 ? "\nChưa soi." : "\nĐã soi:");
             foreach (var line in revealed)
             {
-                sb.Append("\n• ").Append(DemoContent.StatName(line.StatId));
+                sb.Append("\n• ").Append(statName(line.StatId));
                 if (line.StatId != StatIds.Magic)
                     sb.Append(": ").Append(line.Value.ToString("0.#"));
             }

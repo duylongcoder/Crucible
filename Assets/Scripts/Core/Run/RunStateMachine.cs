@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Alchemy.Core
 {
     /// <summary>
@@ -28,6 +30,16 @@ namespace Alchemy.Core
                 State.BagItems.Add(new Product(item));
 
             EnterDecree();
+            Verify();
+        }
+
+        /// <summary>Tiếp tục từ state đã khôi phục (snapshot của Persistence).</summary>
+        internal RunStateMachine(RunState restored, bool checkInvariants = false)
+        {
+            Validate(restored.Def);
+            _brewer = new Brewer(restored.Def.Brew, restored.Def.Items, restored.Def.Scrap);
+            _checkInvariants = checkInvariants;
+            State = restored;
             Verify();
         }
 
@@ -119,6 +131,8 @@ namespace Alchemy.Core
                 return CommandResult.Reject("Túi đã đầy.");
 
             var offer = s.OfferList[offerIndex];
+            if (offer.Item.Kind == ItemKind.Catalyst && s.CatalystCount >= s.Def.CatalystSlots)
+                return CommandResult.Reject($"Đã đủ {s.Def.CatalystSlots} Xúc tác; bán bớt để mua thêm.");
             if (s.Gold < offer.Price)
                 return CommandResult.Reject("Không đủ vàng.");
 
@@ -198,11 +212,13 @@ namespace Alchemy.Core
         private CommandResult Brew()
         {
             var s = State;
-            var result = _brewer.Brew(s.Grid, s.Rng);
+            var result = _brewer.Brew(s.Grid, s.Rng, Catalysts());
             // Nung là xác nhận tiêu hao 100% vật phẩm trên lưới.
             s.Grid = NewGrid(s.Def);
             if (result.Product != null)
                 s.BagItems.Add(result.Product);
+            result.GoldGained = result.Effects.Gold;
+            result.Created = ApplyEffects(result.Effects);
 
             s.LastBrew = result;
             s.BrewsUsed++;
@@ -283,6 +299,9 @@ namespace Alchemy.Core
 
         private void EnterMarket()
         {
+            var effects = new EffectContext();
+            EffectRunner.Run(EffectTrigger.OnShopEnter, Catalysts(), null, null, State.Rng[RngStream.Chance], effects);
+            ApplyEffects(effects);
             State.RerollsThisTurn = 0;
             Market.RollOffers(State);
             State.Phase = RunPhase.Market;
@@ -363,6 +382,34 @@ namespace Alchemy.Core
             EnterDecree();
         }
 
+        /// <summary>Vàng và nguyên liệu Xúc tác tạo ra; nguyên liệu bị chặn khi Túi đầy (I10).</summary>
+        private List<Product> ApplyEffects(EffectContext effects)
+        {
+            var s = State;
+            s.Gold += System.Math.Max(0, effects.Gold);
+            var created = new List<Product>();
+            foreach (var id in effects.Created)
+            {
+                var item = s.Def.FindItem(id);
+                if (item == null || s.BagItems.Count >= s.BagCapacity)
+                    continue;
+                var product = new Product(item);
+                s.BagItems.Add(product);
+                created.Add(product);
+            }
+
+            return created;
+        }
+
+        private List<Product> Catalysts()
+        {
+            var list = new List<Product>();
+            foreach (var p in State.BagItems)
+                if (p.Def.Kind == ItemKind.Catalyst)
+                    list.Add(p);
+            return list;
+        }
+
         private bool HasOfferable()
         {
             foreach (var p in State.BagItems)
@@ -387,7 +434,7 @@ namespace Alchemy.Core
                 || def.ShopTierWeights == null || def.Rewards == null || def.Modifiers == null || def.StarThresholds == null)
                 throw new System.ArgumentException($"RunDef '{def.Id}' thiếu dữ liệu bắt buộc.");
             if (def.SeasonsPerRun < 1 || def.BrewsPerSeason < 1 || def.StartReputation < 1 || def.ShopMaxTier < 1
-                || def.BagCapacity < 0 || def.MaxBagCapacity < def.BagCapacity || def.StarterKit.Count > def.BagCapacity
+                || def.BagCapacity < 0 || def.CatalystSlots < 0 || def.MaxBagCapacity < def.BagCapacity || def.StarterKit.Count > def.BagCapacity
                 || def.PriceFactorMinPercent < 0 || def.PriceFactorMaxPercent < def.PriceFactorMinPercent)
                 throw new System.ArgumentException($"RunDef '{def.Id}' có tham số ngoài giới hạn.");
             if (def.Opponents == null || def.Opponents.Count < def.SeasonsPerRun)

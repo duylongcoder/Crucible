@@ -59,6 +59,7 @@ namespace Alchemy.Core
     {
         BagExpand,
         RareMineral,
+        Catalyst,
     }
 
     public sealed class RewardDef
@@ -67,7 +68,7 @@ namespace Alchemy.Core
         public string Name { get; }
         public RewardKind Kind { get; }
 
-        /// <summary>RareMineral: khoáng nhận được.</summary>
+        /// <summary>RareMineral, Catalyst: vật phẩm nhận được.</summary>
         public ItemDef Item { get; }
 
         /// <summary>BagExpand: số chỗ nới thêm.</summary>
@@ -155,6 +156,9 @@ namespace Alchemy.Core
         public int BagCapacity { get; set; }
         public int MaxBagCapacity { get; set; }
 
+        /// <summary>Số Xúc tác tối đa trong Túi; mua / nhận thêm bị chặn.</summary>
+        public int CatalystSlots { get; set; }
+
         public int ShopMaxTier { get; set; }
 
         /// <summary>Trọng số tier 1..ShopMaxTier khi bày hàng, phần tử i ứng với tier i + 1.</summary>
@@ -190,5 +194,16 @@ namespace Alchemy.Core
         public IReadOnlyList<SeasonModifierDef> Modifiers { get; set; }
 
         public const int RewardChoiceCount = 3;
+
+        /// <summary>Item trong <see cref="Items"/> hoặc <see cref="Scrap"/> theo id; null nếu không có.</summary>
+        public ItemDef FindItem(string id)
+        {
+            if (Scrap != null && Scrap.Id == id)
+                return Scrap;
+            foreach (var item in Items)
+                if (item.Id == id)
+                    return item;
+            return null;
+        }
     }
 }

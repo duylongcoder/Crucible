@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f434d73543d3498eac4e9801b27cd1e, type: 3}
+  m_Name: supreme_arcane
+  m_EditorClassIdentifier: Alchemy.Content::Alchemy.Content.ItemDefAsset
+  id: supreme_arcane
+  displayName: "Kho\xE1ng th\u1EA1ch Ma thu\u1EADt T\u1ED1i th\u01B0\u1EE3ng"
+  kind: 0
+  tier: 10
+  marketPrice: 800
+  magicChance: 0
+  revealLines: 0
+  description: 
+  recipe:
+    pattern:
+    - item: {fileID: 11400000, guid: 9d9eef4e4b6c242db9fcb2649e13f23b, type: 2}
+      requiresMagic: 1
+    - item: {fileID: 0}
+      requiresMagic: 0
+    - item: {fileID: 0}
+      requiresMagic: 0
+    - item: {fileID: 11400000, guid: fed3b9ab3f6cd49acb01aff4804f42a8, type: 2}
+      requiresMagic: 1
+    allowedAdditives:
+    - {fileID: 11400000, guid: d30ddf5daf1c94a23aedf56327d6fb5b, type: 2}
+    baseEssence: 300
+    stats:
+    - stat: {fileID: 11400000, guid: f77e82192d4694f1684d57036ac9f027, type: 2}
+      chancePercent: 100
+      value: 30
+    - stat: {fileID: 11400000, guid: 56c1de9711e8a4b5797ee33e9f25cd6d, type: 2}
+      chancePercent: 100
+      value: 30
+    - stat: {fileID: 11400000, guid: 39c89d078acdf425db92e28762b70c13, type: 2}
+      chancePercent: 100
+      value: 30
+  effects: []

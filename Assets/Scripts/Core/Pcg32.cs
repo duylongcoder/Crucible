@@ -9,7 +9,7 @@ namespace Alchemy.Core
     {
         private const ulong Multiplier = 6364136223846793005UL;
 
-        public ulong State { get; private set; }
+        public ulong State { get; internal set; }
         public ulong Increment { get; }
 
         public Pcg32(ulong seed, ulong stream)

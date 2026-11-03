@@ -1,5 +1,6 @@
 using System.Collections;
 using Alchemy.Core;
+using Alchemy.Persistence;
 using Alchemy.Presentation;
 using NUnit.Framework;
 using UnityEngine;
@@ -14,6 +15,7 @@ namespace Alchemy.Tests.PlayMode
         [UnityTest]
         public IEnumerator MainScene_StartsRunAtDecree_ContinueShowsMarket()
         {
+            FileSaveStorage.Run.Delete();
             yield return SceneManager.LoadSceneAsync("Main");
             yield return null;
 
@@ -29,6 +31,28 @@ namespace Alchemy.Tests.PlayMode
             var market = Object.FindAnyObjectByType<MarketView>();
             Assert.That(market, Is.Not.Null);
             Assert.That(market.enabled, Is.True, "MarketView thiếu reference");
+        }
+
+        [UnityTest]
+        public IEnumerator MainScene_Reload_ResumesSavedRunAtSamePhase()
+        {
+            FileSaveStorage.Run.Delete();
+            yield return SceneManager.LoadSceneAsync("Main");
+            yield return null;
+            var game = Object.FindAnyObjectByType<GameController>();
+            game.Send(new ContinueCommand());
+            game.Send(new LeaveMarketCommand());
+            var hash = game.State.ComputeHash();
+
+            // Như đóng tab rồi mở lại: scene mới, GameController mới đọc save.
+            yield return SceneManager.LoadSceneAsync("Main");
+            yield return null;
+            var resumed = Object.FindAnyObjectByType<GameController>();
+
+            Assert.That(resumed, Is.Not.SameAs(game));
+            Assert.That(resumed.State.Phase, Is.EqualTo(RunPhase.Placing));
+            Assert.That(resumed.State.ComputeHash(), Is.EqualTo(hash));
+            FileSaveStorage.Run.Delete();
         }
 
         [UnityTest]

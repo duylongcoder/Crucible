@@ -31,8 +31,15 @@ namespace Alchemy.Core
         /// <summary>Chỉ Kính soi: số dòng thuộc tính tối đa lộ mỗi lần.</summary>
         public int RevealLines { get; }
 
+        /// <summary>Mô tả hiển thị (Xúc tác: hiệu ứng). Lấy từ data.</summary>
+        public string Description { get; }
+
+        /// <summary>Chỉ Xúc tác.</summary>
+        internal IReadOnlyList<EffectDef> Effects { get; }
+
         public ItemDef(string id, ItemKind kind, int tier, Recipe recipe = null, int magicChance = 0,
-            string name = null, int marketPrice = 0, int revealLines = 0)
+            string name = null, int marketPrice = 0, int revealLines = 0, string description = null,
+            IReadOnlyList<EffectDef> effects = null)
         {
             Id = id;
             Kind = kind;
@@ -42,6 +49,8 @@ namespace Alchemy.Core
             Name = name ?? id;
             MarketPrice = marketPrice;
             RevealLines = revealLines;
+            Description = description ?? "";
+            Effects = effects ?? System.Array.Empty<EffectDef>();
         }
 
         /// <summary>Thành phẩm nung ra từ công thức: dâng được, làm nguyên liệu được.</summary>

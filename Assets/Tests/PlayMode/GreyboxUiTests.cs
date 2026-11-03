@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Linq;
 using Alchemy.Core;
+using Alchemy.Persistence;
 using Alchemy.Presentation;
 using NUnit.Framework;
 using UnityEngine;
@@ -23,6 +24,8 @@ namespace Alchemy.Tests.PlayMode
         [UnitySetUp]
         public IEnumerator SetUp()
         {
+            // GameController tự vào lại run đã lưu; test cần run mới.
+            FileSaveStorage.Run.Delete();
             yield return SceneManager.LoadSceneAsync("Main");
             yield return null;
             _game = Object.FindAnyObjectByType<GameController>();
@@ -30,7 +33,11 @@ namespace Alchemy.Tests.PlayMode
         }
 
         [TearDown]
-        public void TearDown() => Time.timeScale = 1f;
+        public void TearDown()
+        {
+            Time.timeScale = 1f;
+            FileSaveStorage.Run.Delete();
+        }
 
         // ---- helpers ----
 

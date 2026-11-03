@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f434d73543d3498eac4e9801b27cd1e, type: 3}
+  m_Name: iron_ore
+  m_EditorClassIdentifier: Alchemy.Content::Alchemy.Content.ItemDefAsset
+  id: iron_ore
+  displayName: "Qu\u1EB7ng s\u1EAFt"
+  kind: 0
+  tier: 1
+  marketPrice: 4
+  magicChance: 0
+  revealLines: 0
+  description: 
+  recipe:
+    pattern: []
+    allowedAdditives: []
+    baseEssence: 0
+    stats: []
+  effects: []

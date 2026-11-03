@@ -1,4 +1,6 @@
+using Alchemy.Content;
 using Alchemy.Core;
+using UnityEditor;
 
 namespace Alchemy.Tests.EditMode
 {
@@ -58,6 +60,7 @@ namespace Alchemy.Tests.EditMode
                 StartGold = 0,
                 BagCapacity = 10,
                 MaxBagCapacity = 14,
+                CatalystSlots = 5,
                 ShopMaxTier = 3,
                 ShopTierWeights = new[] { 70, 25, 5 },
                 ShopOfferCount = 5,
@@ -86,6 +89,13 @@ namespace Alchemy.Tests.EditMode
                 Modifiers = new SeasonModifierDef[0],
             };
         }
+
+        public const string MvpRunPath = "Assets/Content/MvpRun.asset";
+
+        public static RunDefAsset MvpRunAsset() => AssetDatabase.LoadAssetAtPath<RunDefAsset>(MvpRunPath);
+
+        /// <summary>Content MVP thật (Assets/Content), đã chuyển sang data của Core.</summary>
+        public static RunDef MvpRun() => ContentConverter.ToRunDef(MvpRunAsset());
 
         public static Brewer CreateBrewer() => new Brewer(Rules, Items, Scrap);
 

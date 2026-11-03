@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Alchemy.Content;
 using Alchemy.Core;
 using NUnit.Framework;
 using static Alchemy.Tests.EditMode.TestContent;
@@ -289,7 +288,7 @@ namespace Alchemy.Tests.EditMode
         [Test]
         public void Replay_SameSeedSameCommands_SameHashAfterEveryCommand()
         {
-            var def = DemoContent.CreateRun();
+            var def = TestContent.MvpRun();
             var a = new RunStateMachine(def, 77, checkInvariants: true);
             var b = new RunStateMachine(def, 77, checkInvariants: true);
             var r = new Random(77);

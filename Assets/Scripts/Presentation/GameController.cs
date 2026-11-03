@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Alchemy.Content;
 using Alchemy.Core;
+using Alchemy.Persistence;
 using UnityEngine;
 
 namespace Alchemy.Presentation
@@ -11,6 +12,7 @@ namespace Alchemy.Presentation
     /// </summary>
     public class GameController : ViewBehaviour
     {
+        [SerializeField] private RunDefAsset _content;
         [SerializeField] private GameView[] _views;
         [SerializeField] private UnityEngine.UI.Text _toast;
         [SerializeField] private RectTransform _dragGhost;
@@ -19,9 +21,10 @@ namespace Alchemy.Presentation
 
         private RunDef _def;
         private Coroutine _toastRoutine;
+        private RunSession _session;
         private readonly Dictionary<string, ItemDef> _itemsById = new Dictionary<string, ItemDef>();
 
-        public RunStateMachine Machine { get; private set; }
+        public RunStateMachine Machine => _session.Machine;
         public RunState State => Machine.State;
 
         /// <summary>Vật phẩm đang chọn trong Túi (giữ theo instance vì chỉ số Túi đổi sau mỗi Command).</summary>
@@ -32,6 +35,7 @@ namespace Alchemy.Presentation
 
         protected override void CollectRequiredReferences(List<(string field, Object value)> references)
         {
+            references.Add((nameof(_content), _content));
             references.Add((nameof(_toast), _toast));
             references.Add((nameof(_dragGhost), _dragGhost));
             references.Add((nameof(_dragGhostLabel), _dragGhostLabel));
@@ -41,7 +45,7 @@ namespace Alchemy.Presentation
 
         protected override void OnViewAwake()
         {
-            _def = DemoContent.CreateRun();
+            _def = ContentConverter.ToRunDef(_content);
             foreach (var item in _def.Items)
                 _itemsById[item.Id] = item;
             _itemsById[_def.Scrap.Id] = _def.Scrap;
@@ -49,22 +53,28 @@ namespace Alchemy.Presentation
 
         private void Start()
         {
-            if (enabled)
+            if (!enabled)
+                return;
+            // Có run dở thì vào lại đúng phase; không thì run mới.
+            _session = RunSession.Load(_def, FileSaveStorage.Run, Debug.isDebugBuild);
+            if (_session == null)
                 NewRun();
+            else
+                RefreshAll();
         }
 
         public void NewRun()
         {
-            // shortcut: seed ngẫu nhiên mỗi lần; chọn/nhập seed và lưu run ở M4–M5.
+            // shortcut: seed ngẫu nhiên mỗi lần; chọn/nhập seed ở M5.
             var seed = (ulong)(uint)System.Environment.TickCount;
-            Machine = new RunStateMachine(_def, seed, checkInvariants: Debug.isDebugBuild);
+            _session = RunSession.New(_def, seed, FileSaveStorage.Run, Debug.isDebugBuild);
             Selected = null;
             RefreshAll();
         }
 
         public bool Send(ICommand command)
         {
-            var result = Machine.Execute(command);
+            var result = _session.Execute(command);
             if (!result.Accepted)
             {
                 ShowToast(result.Error);
@@ -93,6 +103,8 @@ namespace Alchemy.Presentation
         }
 
         public string ItemName(string itemId) => _itemsById.TryGetValue(itemId, out var def) ? def.Name : itemId;
+
+        public string StatName(string statId) => _content.StatName(statId);
 
         public void RefreshAll()
         {

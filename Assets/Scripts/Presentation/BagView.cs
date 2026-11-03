@@ -34,11 +34,11 @@ namespace Alchemy.Presentation
 
         protected override void Render(RunState s)
         {
-            // Thành phẩm vừa nung chỉ lộ ra sau khi phát lại xong (Continue khỏi Brewing).
-            var hidden = s.Phase == RunPhase.Brewing ? s.LastBrew?.Product : null;
+            // Thành phẩm và vật phẩm Xúc tác tạo ra chỉ lộ sau khi phát lại xong (Continue khỏi Brewing).
+            var brew = s.Phase == RunPhase.Brewing ? s.LastBrew : null;
             _shown.Clear();
             foreach (var p in s.Bag)
-                if (p != hidden)
+                if (brew == null || (p != brew.Product && !Contains(brew.Created, p)))
                     _shown.Add(p);
 
             _title.text = $"Túi {_shown.Count}/{s.BagCapacity}";
@@ -64,7 +64,7 @@ namespace Alchemy.Presentation
                 return;
             }
 
-            _detail.text = $"<b>{p.Def.Name}</b>\n{UiText.Detail(p)}";
+            _detail.text = $"<b>{p.Def.Name}</b>\n{UiText.Detail(p, Game.StatName)}";
             var index = Game.IndexInBag(p);
             if (s.Phase == RunPhase.Market)
                 _actionList.Add(($"Bán (+{Market.SellPrice(s, p.Def)} vàng)", new SellCommand(index)));
@@ -92,6 +92,14 @@ namespace Alchemy.Presentation
                 seen.Add(def);
                 _actionList.Add(($"Soi bằng {def.Name}", new InspectCommand(i, targetIndex)));
             }
+        }
+
+        private static bool Contains(IReadOnlyList<Product> list, Product p)
+        {
+            foreach (var x in list)
+                if (x == p)
+                    return true;
+            return false;
         }
 
         private void Unplace(ItemButton source)

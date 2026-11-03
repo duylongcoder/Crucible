@@ -1,4 +1,3 @@
-using Alchemy.Content;
 using Alchemy.Core;
 using NUnit.Framework;
 
@@ -12,7 +11,7 @@ namespace Alchemy.Tests.EditMode
         [Test]
         public void RandomAgent_1000Runs_NoInvariantViolation_AllReachRunEnd()
         {
-            var def = DemoContent.CreateRun();
+            var def = TestContent.MvpRun();
             var outcomes = new int[3];
             for (ulong seed = 0; seed < 1000; seed++)
             {
@@ -28,7 +27,7 @@ namespace Alchemy.Tests.EditMode
         [Test]
         public void RandomAgent_SameSeedSameInputs_SameFinalHash()
         {
-            var def = DemoContent.CreateRun();
+            var def = TestContent.MvpRun();
 
             Assert.That(Play(def, 42).State.ComputeHash(), Is.EqualTo(Play(def, 42).State.ComputeHash()));
         }
@@ -36,7 +35,7 @@ namespace Alchemy.Tests.EditMode
         [Test]
         public void GarbageAgent_1000Runs_NeverThrows_AllReachRunEnd()
         {
-            var def = DemoContent.CreateRun();
+            var def = TestContent.MvpRun();
             int[] garbage = { -1, int.MinValue, int.MaxValue, 50, 3 };
             for (ulong seed = 0; seed < 1000; seed++)
             {
@@ -75,7 +74,7 @@ namespace Alchemy.Tests.EditMode
         [Test]
         public void ScriptedAgent_BrewsRecipes_CoversLateSeasonsAndWins()
         {
-            var def = DemoContent.CreateRun();
+            var def = TestContent.MvpRun();
             var maxSeason = 0;
             int won = 0, spoils = 0;
             for (ulong seed = 0; seed < 300; seed++)
@@ -109,7 +108,7 @@ namespace Alchemy.Tests.EditMode
             new[] { "copper_ore", null, null, "tin" },
         };
 
-        private static ICommand Scripted(RunState s)
+        internal static ICommand Scripted(RunState s)
         {
             int Find(string id)
             {
@@ -195,7 +194,7 @@ namespace Alchemy.Tests.EditMode
             return m;
         }
 
-        private static ICommand NextCommand(RunState s, System.Random r)
+        internal static ICommand NextCommand(RunState s, System.Random r)
         {
             int Bag() => s.Bag.Count == 0 ? 0 : r.Next(s.Bag.Count);
             int Cell() => r.Next(s.Grid.Height);

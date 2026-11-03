@@ -33,6 +33,9 @@ namespace Alchemy.Core
                 case RewardKind.RareMineral:
                     // CreateIngredient bị chặn khi Túi đầy.
                     return reward.Item != null && state.BagItems.Count < state.BagCapacity;
+                case RewardKind.Catalyst:
+                    return reward.Item != null && state.BagItems.Count < state.BagCapacity
+                        && state.CatalystCount < state.Def.CatalystSlots;
                 default:
                     return false;
             }
@@ -46,6 +49,7 @@ namespace Alchemy.Core
                     state.BagCapacity = System.Math.Min(state.Def.MaxBagCapacity, state.BagCapacity + reward.Amount);
                     break;
                 case RewardKind.RareMineral:
+                case RewardKind.Catalyst:
                     state.BagItems.Add(new Product(reward.Item));
                     break;
             }

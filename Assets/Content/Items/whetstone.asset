@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f434d73543d3498eac4e9801b27cd1e, type: 3}
+  m_Name: whetstone
+  m_EditorClassIdentifier: Alchemy.Content::Alchemy.Content.ItemDefAsset
+  id: whetstone
+  displayName: "\u0110\xE1 m\xE0i"
+  kind: 3
+  tier: 2
+  marketPrice: 14
+  magicChance: 0
+  revealLines: 0
+  description: "Th\xE9p nung ra: +2 S\u1EAFc b\xE9n."
+  recipe:
+    pattern: []
+    allowedAdditives: []
+    baseEssence: 0
+    stats: []
+  effects:
+  - trigger: 1
+    conditions:
+    - kind: 1
+      item: {fileID: 11400000, guid: 0cb2c7f4b73904932b0c3e7e28d7873a, type: 2}
+      amount: 0
+    action: 3
+    value: 2
+    stat: {fileID: 11400000, guid: f77e82192d4694f1684d57036ac9f027, type: 2}
+    item: {fileID: 0}

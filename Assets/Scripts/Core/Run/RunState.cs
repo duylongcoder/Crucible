@@ -96,6 +96,18 @@ namespace Alchemy.Core
 
         public OpponentDef Opponent => Season >= 1 && Season <= Def.Opponents.Count ? Def.Opponents[Season - 1] : null;
 
+        public int CatalystCount
+        {
+            get
+            {
+                var n = 0;
+                foreach (var p in BagItems)
+                    if (p.Def.Kind == ItemKind.Catalyst)
+                        n++;
+                return n;
+            }
+        }
+
         internal RunState(RunDef def, ulong seed)
         {
             Def = def;

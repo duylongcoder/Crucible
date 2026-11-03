@@ -21,9 +21,11 @@ namespace Alchemy.Presentation
         {
             // Trong lúc animation trận, HUD giữ Uy tín trước trận để không lộ kết quả sớm.
             var reputation = s.Phase == RunPhase.Battle && s.LastBattle != null && !s.LastBattle.Won ? s.Reputation + 1 : s.Reputation;
+            // Vàng Xúc tác cho trong lượt nung cũng chờ phát lại xong.
+            var gold = s.Phase == RunPhase.Brewing && s.LastBrew != null ? s.Gold - s.LastBrew.GoldGained : s.Gold;
             var hearts = new string('♥', reputation) + new string('♡', Mathf.Max(0, s.Def.StartReputation - reputation));
             _info.text = $"Mùa {s.Season}/{s.Def.SeasonsPerRun}   ·   {UiText.Phase(s.Phase)}   ·   Lượt {s.BrewsUsed}/{s.Def.BrewsPerSeason}" +
-                         $"   ·   {s.Gold} vàng   ·   Uy tín {hearts}";
+                         $"   ·   {gold} vàng   ·   Uy tín {hearts}";
             _modifier.text = $"Mùa này: {UiText.Modifier(s.Modifier)}\n<size=16>seed {s.Seed}</size>";
         }
     }

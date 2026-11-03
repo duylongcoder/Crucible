@@ -16,7 +16,8 @@ namespace Alchemy.Core
             _scrap = scrap;
         }
 
-        public BrewResult Brew(Grid grid, RngStreams rng)
+        /// <param name="catalysts">Xúc tác trong Túi, theo thứ tự Túi; hiệu ứng chạy theo Trigger của lượt nung.</param>
+        public BrewResult Brew(Grid grid, RngStreams rng, IReadOnlyList<Product> catalysts = null)
         {
             var feed = grid.ToFeedSequence();
             if (feed.Length > _rules.CellCount)
@@ -39,13 +40,19 @@ namespace Alchemy.Core
                     ? new BrewEvent(BrewEventKind.Wait, t, null)
                     : new BrewEvent(BrewEventKind.Feed, t, feed[t].Def.Id));
 
+            var chance = rng[RngStream.Chance];
+            var effects = new EffectContext();
+            EffectRunner.Run(EffectTrigger.OnBrewStart, catalysts, feed, null, chance, effects);
             var matched = _matcher.Match(feed);
+            EffectRunner.Run(matched == null ? EffectTrigger.OnBrewFail : EffectTrigger.OnRecipeMatch, catalysts, feed,
+                matched, chance, effects);
             var product = matched == null
                 ? new Product(_scrap)
-                : ProductFactory.Create(matched, feed, _rules, rng[RngStream.Chance]);
+                : ProductFactory.Create(matched, feed, _rules, chance, effects);
+            EffectRunner.Run(EffectTrigger.OnBrewEnd, catalysts, feed, matched, chance, effects);
 
             events.Add(new BrewEvent(BrewEventKind.Result, last, product.Def.Id));
-            return new BrewResult(product, new BrewLog(events));
+            return new BrewResult(product, new BrewLog(events), effects);
         }
     }
 }

@@ -1,3 +1,4 @@
+using Alchemy.Content;
 using Alchemy.Presentation;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -14,6 +15,7 @@ using UnityEngine.UI;
 public static class GreyboxSceneBuilder
 {
     private const string ScenePath = "Assets/Scenes/Main.unity";
+    private const string ContentPath = "Assets/Content/MvpRun.asset";
 
     private static Font _font;
     private static GameController _controller;
@@ -65,6 +67,7 @@ public static class GreyboxSceneBuilder
         ghostLabel.raycastTarget = false;
         ghost.SetActive(false);
 
+        Set(controller, "_content", AssetDatabase.LoadAssetAtPath<RunDefAsset>(ContentPath));
         Set(controller, "_toast", toast);
         Set(controller, "_dragGhost", (RectTransform)ghost.transform);
         Set(controller, "_dragGhostLabel", ghostLabel);

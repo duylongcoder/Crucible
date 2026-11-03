@@ -40,7 +40,7 @@ namespace Alchemy.Tests.EditMode
 
         [TestCase("Assets/Scripts/Core/Alchemy.Core.asmdef")]
         [TestCase("Assets/Scripts/Content/Alchemy.Content.asmdef", "Alchemy.Core")]
-        [TestCase("Assets/Scripts/Presentation/Alchemy.Presentation.asmdef", "Alchemy.Core", "Alchemy.Content")]
+        [TestCase("Assets/Scripts/Presentation/Alchemy.Presentation.asmdef", "Alchemy.Core", "Alchemy.Content", "Alchemy.Persistence")]
         [TestCase("Assets/Scripts/Persistence/Alchemy.Persistence.asmdef", "Alchemy.Core")]
         public void Asmdef_ProjectReferences_MatchArchitecture(string path, params string[] expected)
         {

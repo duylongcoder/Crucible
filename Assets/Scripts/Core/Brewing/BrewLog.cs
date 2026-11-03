@@ -45,10 +45,18 @@ namespace Alchemy.Core
         public Product Product { get; }
         public BrewLog Log { get; }
 
-        public BrewResult(Product product, BrewLog log)
+        /// <summary>Hiệu ứng Xúc tác ngoài thành phẩm (vàng, nguyên liệu tạo ra); Core áp ngay khi nung.</summary>
+        internal EffectContext Effects { get; }
+
+        /// <summary>Vàng và vật phẩm Xúc tác tạo ra lượt này; Presentation giấu tới khi phát lại xong để không lộ kết quả sớm.</summary>
+        public int GoldGained { get; internal set; }
+        public IReadOnlyList<Product> Created { get; internal set; } = System.Array.Empty<Product>();
+
+        internal BrewResult(Product product, BrewLog log, EffectContext effects = null)
         {
             Product = product;
             Log = log;
+            Effects = effects ?? new EffectContext();
         }
     }
 }

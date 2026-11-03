@@ -4,6 +4,7 @@
     "references": [
         "Alchemy.Core",
         "Alchemy.Content",
+        "Alchemy.Persistence",
         "UnityEngine.UI"
     ],
     "includePlatforms": [],

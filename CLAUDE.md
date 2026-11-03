@@ -3,7 +3,7 @@
 > Ngữ cảnh dự án cho Claude Code. Đặt file này ở root repo với tên `CLAUDE.md`.
 > Nguồn sự thật về thiết kế: **GDD v2 – Run liên tục** (https://claude.ai/artifact/HUzRUkt7Q7AfyVQm5wh9HS). GDD v1 (QEc8z9hcssgad7LSN9BFGz) đã bị thay thế.
 > Khi file này và GDD v2 mâu thuẫn, **hỏi lại**, không tự chọn.
-> Cập nhật lần cuối: 2026-11-01 (chuyển sang run liên tục 8 Mùa).
+> Cập nhật lần cuối: 2026-11-03 (M4: Xúc tác trong Túi, save + snapshot, content SO).
 
 ## 1. Dự án là gì
 
@@ -43,7 +43,7 @@ Pillars ảnh hưởng trực tiếp tới code:
 
 ## 2. Trạng thái hiện tại
 
-- Milestone đang làm: `M3` (M1, M2 xong; M3 chờ playtest WebGL)
+- Milestone đang làm: `M4` (M1, M2 xong; M3 chờ playtest WebGL; M4 xong code + test Editor, chờ kiểm resume trên build WebGL)
 - Unity: `6000.6.7f1` · Render pipeline: `URP 2D`
 - Unity executable: `/Applications/Unity/Hub/Editor/6000.6.7f1/Unity.app/Contents/MacOS/Unity`
 - Build target: WebGL (chính) + Standalone (dev/test)
@@ -70,7 +70,7 @@ Lộ trình (chi tiết ở GDD v2 mục 13):
 | --- | --- | --- |
 | `Alchemy.Core` | Không (`noEngineReferences: true`) | State, luật, khớp công thức, thuộc tính, ma thuật, rèn, trận, kinh tế, RNG, bất biến |
 | `Alchemy.Content` | Core, UnityEngine | ScriptableObject Def (`ItemDef`, `StatDef`, `RunDef`, `OpponentDef`, `EquipmentDef`…), converter sang data immutable, validator |
-| `Alchemy.Presentation` | Core, Content, UnityEngine | MonoBehaviour, view, UI, animation, input |
+| `Alchemy.Presentation` | Core, Content, Persistence, UnityEngine | MonoBehaviour, view, UI, animation, input |
 | `Alchemy.Persistence` | Core | Save JSON, versioning, storage theo platform |
 | `Alchemy.Tests.EditMode` | Core, Content, Persistence | Unit test, simulation harness, replay |
 | `Alchemy.Tests.PlayMode` | Tất cả | Smoke test |
@@ -137,8 +137,8 @@ Chợ mở trước mỗi lượt nung. Mỗi lượt bắt đầu với lưới
 | Giá thị trường | `MarketPrice` | Giá theo loại vật phẩm × hệ số Mùa × modifier; không theo thuộc tính |
 | Thành phẩm | `Product` | Instance riêng: loại vật phẩm + các dòng thuộc tính + tập dòng đã lộ |
 | Phế phẩm | `ScrapDef` | Một def chung. Không khớp công thức nào; không làm nguyên liệu, chỉ bán |
-| Xúc tác | `ItemDef` (Kind Catalyst) | Tương đương Joker, 5 slot, giữ suốt run. Không gắn với công thức |
-| Thuốc thử | `ItemDef` (Kind Reagent) | Tiêu hao, 2 slot |
+| Xúc tác | `ItemDef` (Kind Catalyst) | Tương đương Joker, giữ suốt run. Nằm trong Túi (chiếm chỗ), tối đa `CatalystSlots` = 5; mua / nhận thêm bị chặn. Mọi Xúc tác trong Túi đều có hiệu lực, chạy theo thứ tự Túi. Không đặt lên lưới, không gắn với công thức |
+| Thuốc thử | `ItemDef` (Kind Reagent) | Tiêu hao, 2 slot. **Để sau M4**: validator chặn content Reagent |
 | Mở khóa | `ItemUnlocked` / `RecipeUnlocked` | Meta theo từng khoáng. Nung ra → mở cả hai; mua / nhận → chỉ mở vật phẩm |
 | Mục Sổ công thức | `RecipeEntry` | Meta: nguyên liệu + thứ tự của công thức đã mở khóa, **không** gồm khoảng cách |
 | Tinh chất | `Essence` | Thành phần của `Quality` |
@@ -323,9 +323,10 @@ Quy tắc khi làm việc với bất biến:
 Mọi hiệu ứng = Trigger + Condition + Action.
 
 Whitelist MVP:
-- Trigger: `OnPlace`, `OnBrewStart`, `OnRecipeMatch`, `OnBrewFail`, `OnBrewEnd`, `OnShopEnter`, `OnSeasonStart` (tùy chọn, có thể để sau MVP)
+- Trigger: `OnBrewStart`, `OnRecipeMatch`, `OnBrewFail`, `OnBrewEnd`, `OnShopEnter`, `OnSeasonStart` (tùy chọn, có thể để sau MVP)
 - Condition: `IngredientIs`, `RecipeIs`, `AdditiveCount`, `Chance`
-- Action: `AddEssence`, `AddPotency`, `MulPotency` (tối đa ×5/lần), `AddStat` (có giới hạn khai báo), `GainGold`, `AddTag`, `CreateIngredient` (vào Túi, chặn nếu Túi đầy), `AddMagicChance` (chỉ phụ gia; 1–50% mỗi phụ gia, cộng dồn, trần tổng 90%)
+- Action: `AddEssence`, `AddPotency`, `MulPotency` (tối đa ×5/lần), `AddStat` (có giới hạn khai báo), `GainGold`, `CreateIngredient` (vào Túi, chặn nếu Túi đầy), `AddMagicChance` (chỉ phụ gia; 1–50% mỗi phụ gia, cộng dồn, trần tổng 90%)
+- Đã bỏ khỏi whitelist (M4): `OnPlace` (gỡ / đặt lại tự do sẽ kích hoạt lặp vô hạn), `AddTag` (chưa có hệ tag). `AddEssence`, `AddPotency`, `MulPotency`, `AddStat` chỉ đi với `OnRecipeMatch`; `OnShopEnter` chỉ dùng điều kiện `Chance`. Mọi điều kiện `Chance` của một hiệu ứng luôn được tung (không dừng sớm) để phụ gia không làm lệch stream (I18).
 
 Cơ chế ngoài Effect (đã duyệt 2026-11-01, số liệu tạm):
 - `ScaleParam` (của `SeasonModifiers`): nhân một tham số trong danh sách đóng (giá mua, giá bán, giá Kính soi, giá reroll, `Power` đối thủ, trọng số bể trang bị), phần trăm số nguyên trong giới hạn khai báo.
@@ -350,7 +351,7 @@ Quy tắc:
 - Thời gian lượt nung trong Core chỉ là số tick (`int`). Giây và timescale chỉ tồn tại ở Presentation.
 - Tất định giữa WebGL và native: logic ảnh hưởng state chỉ dùng phép tính cơ bản (`+ - × ÷`, so sánh). Tránh `Math.Pow`, `Exp`, `Log`, `Sin`… trong Core.
 - Core không dùng thread/`Task.Run` (WebGL không hỗ trợ đa luồng). Harness chạy song song chỉ ở EditMode/CI.
-- Save trong run: `{ version, seed, runDefId, difficulty, starterKitId, actions[] }` + snapshot đầu mỗi lượt (bắt buộc; replay từ snapshot gần nhất). Meta (Sổ công thức, trạng thái mở khóa, Danh vọng, bậc khó cao nhất) lưu file riêng; vàng, Túi, Uy tín không vào meta.
+- Save trong run: `{ version, seed, runDefId, difficulty, starterKitId, actions[] }` + snapshot đầu mỗi lượt (bắt buộc; replay từ snapshot gần nhất). M4 đã cài `RunSession` (Persistence) với `{ version, runDefId, seed, actions[], snapshotAt, snapshot }`; `difficulty`, `starterKitId` thêm ở M5. Mở game có save dở → tự vào lại run; run kết thúc → xóa save. Meta (Sổ công thức, trạng thái mở khóa, Danh vọng, bậc khó cao nhất) lưu file riêng; vàng, Túi, Uy tín không vào meta.
 - Storage qua interface trong Persistence. Standalone: ghi file tạm rồi rename. WebGL: không dựa vào atomic rename; cần flush IndexedDB sau khi ghi (kiểm tra cơ chế cụ thể theo phiên bản Unity trước khi cài đặt).
 - Presentation: 2D, landscape, Canvas Scaler theo reference 1920×1080; kiểm tra layout ở tỷ lệ khác 16:9 trong trình duyệt. Chỉ phát lại `BrewLog`; dùng `ObjectPool<T>` cho view. Không dùng `Update`/`FixedUpdate`/`LateUpdate` để làm mới UI: view vẽ lại theo event (`RefreshAll()` sau mỗi Command), animation/timer dùng coroutine `WaitForSeconds`. Không gọi `GetComponent*`/`transform.Find`/`GameObject.Find` trong code runtime: reference gán sẵn qua `[SerializeField]` (builder hoặc Inspector); chỉ Editor script và test được tìm object.
 - Tên test ví dụ: `Match_WhenOffByOneTick_ProducesScrap`, `Match_WithAdditiveInGap_SameProductAndQuality`, `Match_WhenRequiresMagicAndIngredientNotMagic_ProducesScrap`, `Magic_ChanceSumsInheritanceAndAdditives_CappedAt90`, `BrewLog_WhenFailed_MatchesSuccessUntilResult`, `Place_WhenBrewing_Rejects`, `Inspect_WhenLensSmallerThanStats_RevealsRandomSubset`, `Offering_Always_ConsumesProduct`, `Battle_WhenPowerEqualsOpponent_Wins`, `Reputation_WhenZero_EndsRunExiled`, `Market_NeverOffersTierAboveShopMaxTier`, `Shop_Buy_WhenBagFull_Rejects`, `Shop_SellPrice_IgnoresStats`, `Unlock_WhenBrewed_UnlocksItemAndRecipe`, `Unlock_WhenBought_UnlocksItemOnly`.

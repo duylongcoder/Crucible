@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f434d73543d3498eac4e9801b27cd1e, type: 3}
+  m_Name: star_dust
+  m_EditorClassIdentifier: Alchemy.Content::Alchemy.Content.ItemDefAsset
+  id: star_dust
+  displayName: "B\u1EE5i sao"
+  kind: 1
+  tier: 7
+  marketPrice: 120
+  magicChance: 50
+  revealLines: 0
+  description: 
+  recipe:
+    pattern:
+    - item: {fileID: 11400000, guid: 55c33462ec0de424085d3b6cd31664bd, type: 2}
+      requiresMagic: 0
+    - item: {fileID: 0}
+      requiresMagic: 0
+    - item: {fileID: 11400000, guid: ed9ffb6b5dd804615a46afd0e18acfa7, type: 2}
+      requiresMagic: 0
+    allowedAdditives: []
+    baseEssence: 0
+    stats: []
+  effects: []
