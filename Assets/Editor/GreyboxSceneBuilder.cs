@@ -56,6 +56,9 @@ public static class GreyboxSceneBuilder
             BuildEnd(stage, controller),
         };
 
+        var book = BuildRecipeBook(game.transform, controller);
+        var setup = BuildSetup(game.transform, controller);
+
         var toast = Label(Node("Toast", game.transform, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(-500, 30), new Vector2(500, 90)).transform,
             "Text", "", 28, TextAnchor.MiddleCenter);
         toast.color = new Color(1f, 0.55f, 0.35f);
@@ -68,6 +71,8 @@ public static class GreyboxSceneBuilder
         ghost.SetActive(false);
 
         Set(controller, "_content", AssetDatabase.LoadAssetAtPath<RunDefAsset>(ContentPath));
+        Set(controller, "_setup", setup);
+        Set(controller, "_book", book);
         Set(controller, "_toast", toast);
         Set(controller, "_dragGhost", (RectTransform)ghost.transform);
         Set(controller, "_dragGhostLabel", ghostLabel);
@@ -95,8 +100,9 @@ public static class GreyboxSceneBuilder
         Img(go, UiText.Panel, false);
         var view = go.AddComponent<HudView>();
         Set(view, "Game", game);
-        Set(view, "_info", Label(Fill(go.transform, "Info", 20, 0, -700, 0), "Text", "", 26, TextAnchor.MiddleLeft));
-        Set(view, "_modifier", Label(Fill(go.transform, "Modifier", 1200, 0, -20, 0), "Text", "", 20, TextAnchor.MiddleRight));
+        Set(view, "_info", Label(Fill(go.transform, "Info", 20, 0, -720, 0), "Text", "", 26, TextAnchor.MiddleLeft));
+        Set(view, "_book", Button(go.transform, "Book", "Sổ công thức", new Rect(1180, 10, 220, 60)));
+        Set(view, "_modifier", Label(Fill(go.transform, "Modifier", 1420, 0, -20, 0), "Text", "", 20, TextAnchor.MiddleRight));
         return view;
     }
 
@@ -223,7 +229,61 @@ public static class GreyboxSceneBuilder
         return view;
     }
 
+    private static RecipeBookView BuildRecipeBook(Transform parent, GameController game)
+    {
+        var go = Node("RecipeBook", parent, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+        Img(go, new Color(0, 0, 0, 0.7f), true);
+        var panel = Node("Panel", go.transform, Vector2.zero, Vector2.one, new Vector2(360, 60), new Vector2(-360, -120));
+        Img(panel, UiText.Panel, true);
+        var view = go.AddComponent<RecipeBookView>();
+        Set(view, "_game", game);
+        Label(Top(panel.transform, "Title", 20, 70), "Text", "Sổ công thức", 40, TextAnchor.MiddleCenter);
+        Set(view, "_body", Label(Fill(panel.transform, "Body", 60, 130, -60, -100), "Text", "", 26, TextAnchor.UpperLeft));
+        Set(view, "_close", Button(panel.transform, "Close", "Đóng", BottomRight()));
+        go.SetActive(false);
+        return view;
+    }
+
+    private static SetupView BuildSetup(Transform parent, GameController game)
+    {
+        var go = Node("Setup", parent, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+        // Nền đặc: panel phủ HUD / Túi phía sau khi chưa có run.
+        Img(go, new Color(UiText.Panel.r, UiText.Panel.g, UiText.Panel.b, 1f), true);
+        var view = go.AddComponent<SetupView>();
+        Set(view, "_game", game);
+        Label(Top(go.transform, "Title", 30, 80), "Text", "Run mới", 48, TextAnchor.MiddleCenter);
+        Set(view, "_renown", Label(Top(go.transform, "Renown", 120, 60), "Text", "", 28, TextAnchor.MiddleLeft));
+        Label(Top(go.transform, "DifficultyTitle", 210, 50), "Text", "Bậc khó", 28, TextAnchor.MiddleLeft);
+        Set(view, "_difficulties", List(go.transform, "Difficulties", new Vector2(0, 1), Vector2.one, new Vector2(60, -430), new Vector2(-60, -270),
+            new Vector2(400, 140), 4));
+        Label(Top(go.transform, "KitTitle", 450, 50), "Text", "Bộ khởi đầu", 28, TextAnchor.MiddleLeft);
+        Set(view, "_kits", List(go.transform, "Kits", new Vector2(0, 1), Vector2.one, new Vector2(60, -710), new Vector2(-60, -510),
+            new Vector2(560, 180), 3));
+        Label(Top(go.transform, "SeedTitle", 740, 50), "Text", "Seed (để trống = ngẫu nhiên)", 28, TextAnchor.MiddleLeft);
+        Set(view, "_seed", Input(go.transform, "Seed", 800, 700, 80));
+        Set(view, "_start", Button(go.transform, "Start", "Bắt đầu", BottomRight()));
+        go.SetActive(false);
+        return view;
+    }
+
     // ---- helpers ----
+
+    /// <summary>Neo góc trên trái (top tính từ đỉnh) để không đè tiêu đề neo đỉnh khi màn hình khác 16:9.</summary>
+    private static InputField Input(Transform parent, string name, float top, float width, float height)
+    {
+        var go = Node(name, parent, new Vector2(0, 1), new Vector2(0, 1), new Vector2(60, -top - height), new Vector2(60 + width, -top));
+        var image = Img(go, UiText.SlotEmpty, true);
+        var text = Label(Fill(go.transform, "Text", 16, 6, -16, -6), "Text", "", 30, TextAnchor.MiddleLeft);
+        text.supportRichText = false;
+        var placeholder = Label(Fill(go.transform, "Placeholder", 16, 6, -16, -6), "Text", "ví dụ: 12345 hoặc lo-gia-kim", 30, TextAnchor.MiddleLeft);
+        placeholder.color = new Color(1, 1, 1, 0.35f);
+        var input = go.AddComponent<InputField>();
+        input.targetGraphic = image;
+        input.textComponent = text;
+        input.placeholder = placeholder;
+        input.characterLimit = 40;
+        return input;
+    }
 
     private static GameObject Screen(Transform stage, string name)
     {

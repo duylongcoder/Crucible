@@ -38,14 +38,22 @@ namespace Alchemy.Persistence
                 d.priceFactors.AddRange(s.PriceFactors);
             foreach (RngStream stream in System.Enum.GetValues(typeof(RngStream)))
                 d.rng.Add(s.Rng[stream].State.ToString(CultureInfo.InvariantCulture));
+            d.highestTier = s.HighestTier;
+            d.brewed.AddRange(s.Brewed);
+            d.acquired.AddRange(s.Acquired);
             return d;
         }
 
         /// <summary>Ném <see cref="System.FormatException"/> khi data không khớp RunDef.</summary>
-        public static RunState Restore(RunDef def, ulong seed, SnapshotData d)
+        public static RunState Restore(RunDef def, ulong seed, DifficultyDef difficulty, StarterKitDef kit, int renown,
+            SnapshotData d)
         {
             var s = new RunState(def, seed)
             {
+                Difficulty = difficulty,
+                StarterKit = kit,
+                Renown = renown,
+                HighestTier = d.highestTier,
                 Season = d.season,
                 Phase = (RunPhase)d.phase,
                 BrewsUsed = d.brewsUsed,
@@ -78,6 +86,12 @@ namespace Alchemy.Persistence
                 throw new System.FormatException("Số RNG stream trong save sai.");
             for (var i = 0; i < streams.Length; i++)
                 s.Rng[streams[i]].State = ulong.Parse(d.rng[i], CultureInfo.InvariantCulture);
+            // Danh sách trong save đã sort; thêm lại qua đúng đường để giữ thứ tự (I5).
+            foreach (var id in d.brewed)
+                s.MarkBrewed(Item(def, id));
+            s.HighestTier = d.highestTier;
+            foreach (var id in d.acquired)
+                s.MarkAcquired(Item(def, id));
             return s;
         }
 
@@ -105,7 +119,7 @@ namespace Alchemy.Persistence
             def.FindItem(id) ?? throw new System.FormatException($"Không có vật phẩm '{id}'.");
 
         /// <summary>Id rỗng = null; id không có trong RunDef = save hỏng.</summary>
-        private static T Find<T>(IReadOnlyList<T> list, string id, System.Func<T, string> getId) where T : class
+        internal static T Find<T>(IReadOnlyList<T> list, string id, System.Func<T, string> getId) where T : class
         {
             if (string.IsNullOrEmpty(id))
                 return null;

@@ -319,12 +319,12 @@ namespace Alchemy.Tests.EditMode
         {
             d => { d.ShopPool = new ItemDef[0]; return d; },
             d => { d.Rewards = new RewardDef[0]; return d; },
-            d => { d.StarterKit = new ItemDef[0]; return d; },
+            d => { d.StarterKits = new[] { Kit() }; return d; },
             d => { d.ShopTierWeights = new[] { 0, 0, 0 }; return d; },
             d => { d.ShopTierWeights = new[] { 100 }; return d; },
             d => { d.Equipment = new[] { new EquipmentDef("zero", "Gậy", 0, new StatWeight[0]) }; return d; },
-            d => { d.Opponents = d.Opponents.Select(o => new OpponentDef(o.Id, o.Name, o.Kind, double.NaN)).ToArray(); return d; },
-            d => { d.Opponents = d.Opponents.Select(o => new OpponentDef(o.Id, o.Name, o.Kind, double.PositiveInfinity)).ToArray(); return d; },
+            d => { d.Difficulties = new[] { Difficulty(d.Difficulties[0].Opponents.Select(o => new OpponentDef(o.Id, o.Name, o.Kind, double.NaN)).ToArray()) }; return d; },
+            d => { d.Difficulties = new[] { Difficulty(d.Difficulties[0].Opponents.Select(o => new OpponentDef(o.Id, o.Name, o.Kind, double.PositiveInfinity)).ToArray()) }; return d; },
         };
 
         [Test]
@@ -380,7 +380,7 @@ namespace Alchemy.Tests.EditMode
             var noEquipment = CreateRun();
             noEquipment.Equipment = new EquipmentDef[0];
             var fewOpponents = CreateRun();
-            fewOpponents.Opponents = fewOpponents.Opponents.Take(3).ToArray();
+            fewOpponents.Difficulties = new[] { Difficulty(fewOpponents.Difficulties[0].Opponents.Take(3).ToArray()) };
 
             Assert.Throws<ArgumentException>(() => new RunStateMachine(noEquipment, 1));
             Assert.Throws<ArgumentException>(() => new RunStateMachine(fewOpponents, 1));

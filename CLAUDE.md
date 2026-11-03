@@ -3,7 +3,7 @@
 > Ngữ cảnh dự án cho Claude Code. Đặt file này ở root repo với tên `CLAUDE.md`.
 > Nguồn sự thật về thiết kế: **GDD v2 – Run liên tục** (https://claude.ai/artifact/HUzRUkt7Q7AfyVQm5wh9HS). GDD v1 (QEc8z9hcssgad7LSN9BFGz) đã bị thay thế.
 > Khi file này và GDD v2 mâu thuẫn, **hỏi lại**, không tự chọn.
-> Cập nhật lần cuối: 2026-11-03 (M4: Xúc tác trong Túi, save + snapshot, content SO).
+> Cập nhật lần cuối: 2026-11-03 (M5–M6: bậc khó, Danh vọng, Sổ công thức, seed, GreedyAgent, cân bằng).
 
 ## 1. Dự án là gì
 
@@ -43,7 +43,7 @@ Pillars ảnh hưởng trực tiếp tới code:
 
 ## 2. Trạng thái hiện tại
 
-- Milestone đang làm: `M4` (M1, M2 xong; M3 chờ playtest WebGL; M4 xong code + test Editor, chờ kiểm resume trên build WebGL)
+- Milestone đang làm: `M6` (M1, M2 xong; M3–M6 xong code + test Editor. Còn: playtest người ngoài trên WebGL (M3), kiểm resume khi đóng tab (M4), so seed Editor / Standalone / WebGL (M5), chạy nightly 50.000 trên CI (M6). Chi tiết `Docs/milestones/M3..M6.md`)
 - Unity: `6000.6.7f1` · Render pipeline: `URP 2D`
 - Unity executable: `/Applications/Unity/Hub/Editor/6000.6.7f1/Unity.app/Contents/MacOS/Unity`
 - Build target: WebGL (chính) + Standalone (dev/test)
@@ -115,8 +115,8 @@ Chợ mở trước mỗi lượt nung. Mỗi lượt bắt đầu với lưới
 | Uy tín | `Reputation` | 3, chỉ giảm (MVP). Về 0 → trục xuất / xử tử. **Khác Danh vọng** |
 | Chiến lợi phẩm | `RewardDef` | Chọn 1/3 sau trận Thắng |
 | Modifier Mùa | `SeasonModifierDef` | Hệ số, biết trước 1 Mùa |
-| Bậc khó | `DifficultyDef` | Mở sau khi thắng run |
-| Bộ khởi đầu | `StarterKitDef` | Nguyên liệu khởi đầu của run |
+| Bậc khó | `DifficultyDef` | 3 bậc, mỗi bậc danh sách 8 đối thủ riêng + hệ số Danh vọng (%). Bậc đầu mở sẵn; thắng run ở bậc i mở bậc i + 1 |
+| Bộ khởi đầu | `StarterKitDef` | Nguyên liệu khởi đầu của run; chọn ở panel Run mới. Bộ đầu mở sẵn, bộ khác mở theo mốc Danh vọng (`UnlockRenown`) |
 | Túi | `Bag` | Kho duy nhất, nhìn thấy toàn bộ. Sức chứa khởi đầu cố định, nới qua chiến lợi phẩm. Tách biệt với lưới |
 | Vật phẩm | `ItemDef` + `Kind` | Base cho mọi vật phẩm. `Kind`: Mineral, Additive, Lens, Catalyst, Reagent |
 | Khoáng / Nguyên liệu | `ItemDef` (Kind Mineral) | Có `Tier` 1–10, `MarketPrice`, `Recipe` nullable |
@@ -280,7 +280,7 @@ Quality = sum(Essence) × ((1 + sum(AddPotency)) × product(MulPotency))
 - Mở khóa chỉ thêm lựa chọn, không tăng chỉ số.
 
 ### Giá trị khởi đầu (đọc từ config ScriptableObject, không hard-code)
-8 Mùa/run · 3 lượt nung/Mùa · lưới 3×3 · 3 Uy tín · vàng khởi đầu 0 · `ShopMaxTier` 3, tỉ lệ tier 70/25/5 · reroll 2 vàng (+1 mỗi lần) · `BrewTickSeconds` 3 · timescale 1/2/3 · trần ma thuật 90%, truyền thừa tier × 5%, `MagicChance` phụ gia 10/20/30% · biên độ giá Mùa 70–130% · sức chứa Túi `<chưa có số>` · `RevealLines` theo cấp `<chưa có>` · `Power` đối thủ từng Mùa `<chưa có>`.
+8 Mùa/run · 3 lượt nung/Mùa · lưới 3×3 · 3 Uy tín · vàng khởi đầu 0 · `ShopMaxTier` 3, tỉ lệ tier 70/25/5 · reroll 2 vàng (+1 mỗi lần) · `BrewTickSeconds` 3 · timescale 1/2/3 · trần ma thuật 90%, truyền thừa tier × 5%, `MagicChance` phụ gia 10/20/30% · biên độ giá Mùa 70–130% · sức chứa Túi 14 (trần 24) · `RevealLines` 1 / 3 · tỉ lệ giá bán 75% · `Power` đối thủ và mốc mở khóa: xem `Assets/Content` và `Docs/milestones/M5.md`, `M6.md` (tạm, chỉnh theo báo cáo GreedyAgent).
 
 ## 6. Bất biến (không được phá)
 
@@ -374,10 +374,10 @@ Quy tắc:
 
 Nguyên tắc chung (chủ dự án chốt): khi có nhiều phương án, ưu tiên phương án đơn giản và tiện cho MVP. Vẫn hỏi trước với các câu dưới đây. Danh sách đầy đủ ở GDD v2 mục 14.
 
-- **Mức khó đối thủ hiển thị ra sao?** Tạm: ★1–5 suy từ `Power` theo bảng khoảng.
+- **Mức khó đối thủ hiển thị ra sao?** Tạm: ★1–5 suy từ `Power` theo bảng khoảng (đã cài).
 - **Chiến lợi phẩm có nút bỏ qua không?** Tạm: không.
-- **Bộ khởi đầu chọn trước run ngay MVP?** Tạm: có, 1–2 bộ.
-- **Danh vọng quy đổi và giá mở khóa.** Chưa có số.
+- **Bộ khởi đầu chọn trước run ngay MVP?** Đã chốt: có, 3 bộ, chọn ở panel Run mới.
+- **Danh vọng quy đổi và giá mở khóa.** Đã chốt cơ chế: tự mở khi đạt mốc (không tiêu Danh vọng). Số tạm: (Thắng × 10 + tier cao nhất × 5 + thắng run ? 30) × hệ số bậc khó; mốc 40 / 80 / 100 / 120 / 150.
 - **Độ dài run** (8 × 3 lượt nung + 8 trận, ~30–45 phút?). Cần playtest.
 - **Con số cân bằng** (đọc từ config, không chặn code): sức chứa Túi, `RevealLines` theo cấp Kính soi, giá thị trường, `Power` đối thủ từng Mùa, trần tier "Khoáng hiếm" theo Mùa. Số liệu ma thuật và primitive hiện là tạm, Claude được phép đặt, hiệu chỉnh sau.
 

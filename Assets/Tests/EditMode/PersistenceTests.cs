@@ -27,7 +27,7 @@ namespace Alchemy.Tests.EditMode
             for (ulong seed = 0; seed < 15; seed++)
             {
                 var storage = new MemoryStorage();
-                var session = RunSession.New(def, seed, storage, checkInvariants: true);
+                var session = RunSession.New(def, seed, null, storage, checkInvariants: true);
                 var agent = new System.Random((int)seed);
                 for (var i = 0; i < 3000 && session.Machine.State.Phase != RunPhase.RunEnd; i++)
                 {
@@ -58,7 +58,7 @@ namespace Alchemy.Tests.EditMode
         {
             var def = TestContent.MvpRun();
             var storage = new MemoryStorage();
-            var session = RunSession.New(def, 5, storage);
+            var session = RunSession.New(def, 5, null, storage);
             session.Execute(new ContinueCommand());
             session.Execute(new LeaveMarketCommand());
             session.Execute(new PlaceCommand(0, 0, 0));
@@ -76,7 +76,7 @@ namespace Alchemy.Tests.EditMode
         {
             var def = TestContent.MvpRun();
             var storage = new MemoryStorage();
-            var session = RunSession.New(def, 1, storage);
+            var session = RunSession.New(def, 1, null, storage);
             // Không dâng gì mỗi Mùa → thua 3 trận → trục xuất.
             for (var i = 0; i < 200 && session.Machine.State.Phase != RunPhase.RunEnd; i++)
                 session.Execute(session.Machine.State.Phase == RunPhase.Market || session.Machine.State.Phase == RunPhase.Placing
@@ -93,7 +93,7 @@ namespace Alchemy.Tests.EditMode
         {
             var def = TestContent.MvpRun();
             var storage = new MemoryStorage();
-            var session = RunSession.New(def, 2, storage);
+            var session = RunSession.New(def, 2, null, storage);
             session.Execute(new ContinueCommand());
             session.Execute(new SkipBrewCommand());
 
@@ -119,7 +119,7 @@ namespace Alchemy.Tests.EditMode
         {
             var def = TestContent.MvpRun();
             var storage = new MemoryStorage();
-            RunSession.New(def, 1, storage).Execute(new ContinueCommand());
+            RunSession.New(def, 1, null, storage).Execute(new ContinueCommand());
             storage.Text = storage.Text.Replace("\"continue\"", "\"brew\"");
             LogAssert.Expect(LogType.Warning, new System.Text.RegularExpressions.Regex("Bỏ qua save"));
 

@@ -25,6 +25,47 @@ namespace Alchemy.Core
         }
     }
 
+    /// <summary>Bậc khó: danh sách đối thủ riêng theo Mùa + hệ số Danh vọng. Bậc i + 1 mở khi thắng run ở bậc i.</summary>
+    public sealed class DifficultyDef
+    {
+        public string Id { get; }
+        public string Name { get; }
+
+        /// <summary>Đối thủ Mùa i ở phần tử i − 1.</summary>
+        public IReadOnlyList<OpponentDef> Opponents { get; }
+
+        /// <summary>Danh vọng cuối run nhân với hệ số này (%).</summary>
+        public int RenownPercent { get; }
+
+        public DifficultyDef(string id, string name, IReadOnlyList<OpponentDef> opponents, int renownPercent = 100)
+        {
+            Id = id;
+            Name = name;
+            Opponents = opponents;
+            RenownPercent = renownPercent;
+        }
+    }
+
+    public sealed class StarterKitDef
+    {
+        public string Id { get; }
+        public string Name { get; }
+        public string Description { get; }
+        public IReadOnlyList<ItemDef> Items { get; }
+
+        /// <summary>Danh vọng tích lũy cần để chọn được bộ này.</summary>
+        public int UnlockRenown { get; }
+
+        public StarterKitDef(string id, string name, IReadOnlyList<ItemDef> items, string description = "", int unlockRenown = 0)
+        {
+            Id = id;
+            Name = name;
+            Items = items;
+            Description = description;
+            UnlockRenown = unlockRenown;
+        }
+    }
+
     public sealed class StatWeight
     {
         internal string StatId { get; }
@@ -77,9 +118,13 @@ namespace Alchemy.Core
         public int MinSeason { get; }
         public int MaxSeason { get; }
 
+        /// <summary>Danh vọng tích lũy cần để chiến lợi phẩm này vào bể.</summary>
+        public int UnlockRenown { get; }
+
         public RewardDef(string id, string name, RewardKind kind, ItemDef item = null, int amount = 0,
-            int minSeason = 1, int maxSeason = int.MaxValue)
+            int minSeason = 1, int maxSeason = int.MaxValue, int unlockRenown = 0)
         {
+            UnlockRenown = unlockRenown;
             Id = id;
             Name = name;
             Kind = kind;
@@ -185,10 +230,17 @@ namespace Alchemy.Core
         public IReadOnlyList<ItemDef> Items { get; set; }
         public ItemDef Scrap { get; set; }
         public IReadOnlyList<ItemDef> ShopPool { get; set; }
-        public IReadOnlyList<ItemDef> StarterKit { get; set; }
 
-        /// <summary>Đối thủ Mùa i ở phần tử i − 1.</summary>
-        public IReadOnlyList<OpponentDef> Opponents { get; set; }
+        /// <summary>Phần tử đầu là mặc định (luôn mở).</summary>
+        public IReadOnlyList<StarterKitDef> StarterKits { get; set; }
+
+        /// <summary>Từ dễ tới khó; phần tử đầu luôn mở.</summary>
+        public IReadOnlyList<DifficultyDef> Difficulties { get; set; }
+
+        /// <summary>Danh vọng = (Thắng × RenownPerWin + tier cao nhất đã nung × RenownPerTier + thắng run ? RenownRunWin) × hệ số bậc khó.</summary>
+        public int RenownPerWin { get; set; }
+        public int RenownPerTier { get; set; }
+        public int RenownRunWin { get; set; }
         public IReadOnlyList<EquipmentDef> Equipment { get; set; }
         public IReadOnlyList<RewardDef> Rewards { get; set; }
         public IReadOnlyList<SeasonModifierDef> Modifiers { get; set; }

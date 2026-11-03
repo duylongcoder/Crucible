@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94af8e6fef7bb4db0b06eae9ca75ed36, type: 3}
+  m_Name: normal
+  m_EditorClassIdentifier: Alchemy.Content::Alchemy.Content.DifficultyDefAsset
+  id: normal
+  displayName: "Th\u01B0\u1EDDng"
+  opponents:
+  - {fileID: 11400000, guid: fef5278ae3bb04d5797c8a713bfe91c6, type: 2}
+  - {fileID: 11400000, guid: 02bb290e7cd124f05a1d42c92a7a912b, type: 2}
+  - {fileID: 11400000, guid: 1853fc704332f4226b64d3f7e804bd82, type: 2}
+  - {fileID: 11400000, guid: d2ce95b3aae73492d8368c16e80b6dc5, type: 2}
+  - {fileID: 11400000, guid: a1d18c0ea57d74af79aebbd427a7922e, type: 2}
+  - {fileID: 11400000, guid: 4aa83785ef489490db574f51f03709d7, type: 2}
+  - {fileID: 11400000, guid: 737063fb348e7412f9baf2c758ccfe28, type: 2}
+  - {fileID: 11400000, guid: 99fc00a176743452faad7ca27f48ecb3, type: 2}
+  renownPercent: 100

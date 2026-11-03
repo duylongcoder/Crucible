@@ -11,41 +11,52 @@ namespace Alchemy.Persistence
     public sealed class RunSession
     {
         /// <summary>Tăng khi đổi định dạng save hoặc luật làm replay cũ sai; save khác version bị bỏ qua.</summary>
-        public const int Version = 1;
+        public const int Version = 2;
 
         private readonly ISaveStorage _storage;
+        private readonly MetaStore _meta;
         private readonly SaveFile _file;
         private int _snapshotSeason;
         private int _snapshotBrews;
 
         public RunStateMachine Machine { get; }
 
-        private RunSession(RunStateMachine machine, SaveFile file, ISaveStorage storage)
+        /// <summary>Danh vọng và mở khóa run vừa mang về; có khi run kết thúc.</summary>
+        public RunRewards Rewards { get; private set; }
+
+        private RunSession(RunStateMachine machine, SaveFile file, ISaveStorage storage, MetaStore meta)
         {
             Machine = machine;
             _file = file;
             _storage = storage;
+            _meta = meta;
             _snapshotSeason = file.snapshot.season;
             _snapshotBrews = file.snapshot.brewsUsed;
         }
 
-        public static RunSession New(RunDef def, ulong seed, ISaveStorage storage, bool checkInvariants = false)
+        /// <param name="meta">Null = không ghi meta (test).</param>
+        public static RunSession New(RunDef def, ulong seed, RunSetup setup, ISaveStorage storage, MetaStore meta = null,
+            bool checkInvariants = false)
         {
-            var machine = new RunStateMachine(def, seed, checkInvariants);
+            var machine = new RunStateMachine(def, seed, setup, checkInvariants);
+            var s = machine.State;
             var file = new SaveFile
             {
                 version = Version,
                 runDefId = def.Id,
                 seed = seed.ToString(CultureInfo.InvariantCulture),
-                snapshot = Snapshot.Capture(machine.State),
+                difficulty = s.Difficulty.Id,
+                starterKit = s.StarterKit.Id,
+                renown = s.Renown,
+                snapshot = Snapshot.Capture(s),
             };
-            var session = new RunSession(machine, file, storage);
+            var session = new RunSession(machine, file, storage, meta);
             session.Save();
             return session;
         }
 
         /// <summary>Khôi phục run đã lưu; null khi chưa có save, save khác version / RunDef, hoặc hỏng.</summary>
-        public static RunSession Load(RunDef def, ISaveStorage storage, bool checkInvariants = false)
+        public static RunSession Load(RunDef def, ISaveStorage storage, MetaStore meta = null, bool checkInvariants = false)
         {
             var text = storage.Read();
             if (string.IsNullOrEmpty(text))
@@ -59,7 +70,12 @@ namespace Alchemy.Persistence
                     throw new System.FormatException($"save version {file?.version}, RunDef '{file?.runDefId}'.");
 
                 var seed = ulong.Parse(file.seed, CultureInfo.InvariantCulture);
-                var machine = new RunStateMachine(Snapshot.Restore(def, seed, file.snapshot), checkInvariants);
+                var difficulty = Snapshot.Find(def.Difficulties, file.difficulty, d => d.Id)
+                                 ?? throw new System.FormatException("save thiếu bậc khó.");
+                var kit = Snapshot.Find(def.StarterKits, file.starterKit, k => k.Id)
+                          ?? throw new System.FormatException("save thiếu bộ khởi đầu.");
+                var restored = Snapshot.Restore(def, seed, difficulty, kit, file.renown, file.snapshot);
+                var machine = new RunStateMachine(restored, checkInvariants);
                 for (var i = file.snapshotAt; i < file.actions.Count; i++)
                 {
                     var command = CommandCodec.Decode(file.actions[i]);
@@ -67,7 +83,7 @@ namespace Alchemy.Persistence
                         throw new System.FormatException($"action {i} ({file.actions[i]?.type}) không replay được.");
                 }
 
-                return new RunSession(machine, file, storage);
+                return new RunSession(machine, file, storage, meta);
             }
             catch (System.Exception e) when (e is System.FormatException || e is System.ArgumentException
                                              || e is System.OverflowException || e is System.InvalidOperationException)
@@ -87,6 +103,13 @@ namespace Alchemy.Persistence
             var s = Machine.State;
             if (s.Phase == RunPhase.RunEnd)
             {
+                // Ghi meta trước rồi mới xóa save run: tắt đúng giữa hai bước thì chỉ có thể quy đổi lặp, không mất tiến trình.
+                if (_meta != null)
+                {
+                    Rewards = MetaProgress.Apply(_meta.State, s);
+                    _meta.Save();
+                }
+
                 _storage.Delete();
                 return result;
             }

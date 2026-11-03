@@ -72,8 +72,14 @@ namespace Alchemy.Tests.EditMode
             _run.items = new List<ItemDefAsset> { _a, _b, _add, _x, _top };
             _run.scrap = scrap;
             _run.shopPool = new List<ItemDefAsset> { _a, _b, _add };
-            _run.starterKit = new List<ItemDefAsset> { _a };
-            _run.opponents = new List<OpponentDefAsset> { opponent };
+            var kit = New<StarterKitDefAsset>();
+            kit.id = "kit";
+            kit.items.Add(_a);
+            var difficulty = New<DifficultyDefAsset>();
+            difficulty.id = "normal";
+            difficulty.opponents.Add(opponent);
+            _run.starterKits = new List<StarterKitDefAsset> { kit };
+            _run.difficulties = new List<DifficultyDefAsset> { difficulty };
             _run.equipment = new List<EquipmentDefAsset> { equipment };
         }
 

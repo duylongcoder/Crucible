@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 923ccfaa8e9c74c23bdf8bea7c0e6f7a, type: 3}
+  m_Name: iron_smith
+  m_EditorClassIdentifier: Alchemy.Content::Alchemy.Content.StarterKitDefAsset
+  id: iron_smith
+  displayName: "Th\u1EE3 r\xE8n s\u1EAFt"
+  description: "4 qu\u1EB7ng s\u1EAFt, 4 than \u0111\xE1, 2 qu\u1EB7ng \u0111\u1ED3ng, thi\u1EBFc, h\xE0n the, k\xEDnh soi"
+  items:
+  - {fileID: 11400000, guid: be95da4e382574f99a3a7757ad209a9b, type: 2}
+  - {fileID: 11400000, guid: be95da4e382574f99a3a7757ad209a9b, type: 2}
+  - {fileID: 11400000, guid: be95da4e382574f99a3a7757ad209a9b, type: 2}
+  - {fileID: 11400000, guid: be95da4e382574f99a3a7757ad209a9b, type: 2}
+  - {fileID: 11400000, guid: 89424bcc4043849568d51fd4cd60c48b, type: 2}
+  - {fileID: 11400000, guid: 89424bcc4043849568d51fd4cd60c48b, type: 2}
+  - {fileID: 11400000, guid: 89424bcc4043849568d51fd4cd60c48b, type: 2}
+  - {fileID: 11400000, guid: 89424bcc4043849568d51fd4cd60c48b, type: 2}
+  - {fileID: 11400000, guid: 1dc1d83c7085a4cd7b059bc688330aa7, type: 2}
+  - {fileID: 11400000, guid: 1dc1d83c7085a4cd7b059bc688330aa7, type: 2}
+  - {fileID: 11400000, guid: c462270ec0b7b4d00bc19276beb27b44, type: 2}
+  - {fileID: 11400000, guid: b4f6f6c0485f949d1b72ea7f0604e549, type: 2}
+  - {fileID: 11400000, guid: fd8bfd48b3aa645caa613becb3aa4cc3, type: 2}
+  unlockRenown: 0

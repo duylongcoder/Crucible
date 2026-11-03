@@ -37,10 +37,14 @@ namespace Alchemy.Core
         /// <summary>Chỉ Xúc tác.</summary>
         internal IReadOnlyList<EffectDef> Effects { get; }
 
+        /// <summary>Danh vọng tích lũy cần để vật phẩm này vào bể Chợ.</summary>
+        public int UnlockRenown { get; }
+
         public ItemDef(string id, ItemKind kind, int tier, Recipe recipe = null, int magicChance = 0,
             string name = null, int marketPrice = 0, int revealLines = 0, string description = null,
-            IReadOnlyList<EffectDef> effects = null)
+            IReadOnlyList<EffectDef> effects = null, int unlockRenown = 0)
         {
+            UnlockRenown = unlockRenown;
             Id = id;
             Kind = kind;
             Tier = tier;

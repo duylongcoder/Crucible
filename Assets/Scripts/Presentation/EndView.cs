@@ -17,7 +17,7 @@ namespace Alchemy.Presentation
             references.Add((nameof(_newRun), _newRun));
         }
 
-        protected override void OnViewAwake() => _newRun.onClick.AddListener(() => Game.NewRun());
+        protected override void OnViewAwake() => _newRun.onClick.AddListener(() => Game.ShowSetup());
 
         protected override bool IsVisible(RunPhase phase) => phase == RunPhase.RunEnd;
 
@@ -28,6 +28,15 @@ namespace Alchemy.Presentation
             _summary.text = won
                 ? $"Bạn giữ được lòng tin của Nhà vua tới Mùa cuối.\nThắng {s.Wins}/{s.Def.SeasonsPerRun} trận, còn {s.Reputation} Uy tín."
                 : $"Uy tín cạn ở Mùa {s.Season}. Thắng {s.Wins} trận.";
+
+            var r = Game.LastRewards;
+            if (r == null)
+                return;
+            _summary.text += $"\n\n+{r.RenownGained} Danh vọng (tổng {Game.Meta.State.Renown})";
+            if (r.DifficultyUnlocked != null)
+                _summary.text += $"\nMở bậc khó: {r.DifficultyUnlocked.Name}";
+            if (r.Unlocks.Count > 0)
+                _summary.text += $"\nMở khóa: {string.Join(", ", r.Unlocks)}";
         }
     }
 }

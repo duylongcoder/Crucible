@@ -13,7 +13,7 @@ namespace Alchemy.Tests.EditMode
         {
             var def = TestContent.MvpRun();
             var outcomes = new int[3];
-            for (ulong seed = 0; seed < 1000; seed++)
+            for (ulong seed = 0; seed < (ulong)Harness.Runs(1000); seed++)
             {
                 var m = Play(def, seed);
                 Assert.That(m.State.Phase, Is.EqualTo(RunPhase.RunEnd), $"seed {seed} kẹt ở {m.State.Phase}");
@@ -37,7 +37,7 @@ namespace Alchemy.Tests.EditMode
         {
             var def = TestContent.MvpRun();
             int[] garbage = { -1, int.MinValue, int.MaxValue, 50, 3 };
-            for (ulong seed = 0; seed < 1000; seed++)
+            for (ulong seed = 0; seed < (ulong)Harness.Runs(1000); seed++)
             {
                 var m = new RunStateMachine(def, seed, checkInvariants: true);
                 var r = new System.Random((int)seed);
@@ -187,7 +187,14 @@ namespace Alchemy.Tests.EditMode
         /// <summary>Agent dùng chung seed run cho chuỗi input để cùng seed → cùng chuỗi Command.</summary>
         private static RunStateMachine Play(RunDef def, ulong seed)
         {
-            var m = new RunStateMachine(def, seed, checkInvariants: true);
+            // Xoay vòng mọi bậc khó / bộ khởi đầu, mở hết khóa để phủ toàn bộ content.
+            var setup = new RunSetup
+            {
+                Difficulty = def.Difficulties[(int)(seed % (ulong)def.Difficulties.Count)],
+                StarterKit = def.StarterKits[(int)(seed / 3 % (ulong)def.StarterKits.Count)],
+                Renown = int.MaxValue / 2,
+            };
+            var m = new RunStateMachine(def, seed, setup, checkInvariants: true);
             var agent = new System.Random((int)seed);
             for (var i = 0; i < MaxCommands && m.State.Phase != RunPhase.RunEnd; i++)
                 m.Execute(NextCommand(m.State, agent));

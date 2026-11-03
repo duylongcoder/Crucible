@@ -1,0 +1,47 @@
+name: Nightly Harness
+
+# M6: RandomAgent, GarbageAgent và GreedyAgent (mỗi bậc khó) chạy 50.000 run, InvariantChecker sau mỗi Command.
+on:
+  schedule:
+    - cron: "0 19 * * *" # 02:00 giờ Việt Nam
+  workflow_dispatch:
+
+jobs:
+  harness:
+    name: EditMode harness 50k
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Library
+        uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-EditMode-${{ hashFiles('Packages/packages-lock.json', 'ProjectSettings/ProjectVersion.txt', 'Assets/**/*.asmdef') }}
+          restore-keys: |
+            Library-EditMode-
+
+      - name: Run harness
+        uses: game-ci/unity-test-runner@v4
+        id: tests
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          testMode: editmode
+          artifactsPath: results
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          checkName: Nightly Harness Results
+          customParameters: -testFilter "RandomAgentTests;BalanceReportTests" -harnessRuns 50000
+
+      - name: Upload results + balance report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-harness
+          path: |
+            ${{ steps.tests.outputs.artifactsPath }}
+            results/balance-report.md

@@ -104,7 +104,7 @@ namespace Alchemy.Tests.EditMode
                     if (!items.Contains(i))
                         items.Add(i);
             def.Items = items;
-            def.StarterKit = starter;
+            def.StarterKits = new[] { new StarterKitDef("k", "k", starter) };
             def.BagCapacity = bag;
             if (shop != null)
             {

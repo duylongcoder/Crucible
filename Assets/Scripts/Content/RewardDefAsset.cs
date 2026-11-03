@@ -18,5 +18,8 @@ namespace Alchemy.Content
 
         [Min(1)] public int minSeason = 1;
         [Min(1)] public int maxSeason = 99;
+
+        [Tooltip("Danh vọng tích lũy cần để vào bể chiến lợi phẩm.")]
+        [Min(0)] public int unlockRenown;
     }
 }

@@ -61,7 +61,7 @@ namespace Alchemy.Core
             for (var t = 0; t < def.ShopMaxTier; t++)
                 byTier[t] = new List<ItemDef>();
             foreach (var item in def.ShopPool)
-                if (IsSellable(def, item))
+                if (IsSellable(def, item) && item.UnlockRenown <= state.Renown)
                     byTier[item.Tier - 1].Add(item);
             for (var t = 0; t < def.ShopMaxTier; t++)
                 weights[t] = byTier[t].Count > 0 && t < def.ShopTierWeights.Count ? def.ShopTierWeights[t] : 0;

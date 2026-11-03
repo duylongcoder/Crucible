@@ -23,6 +23,9 @@ namespace Alchemy.Content
 
         [TextArea] public string description;
 
+        [Tooltip("Danh vọng tích lũy cần để vật phẩm vào bể Chợ.")]
+        [Min(0)] public int unlockRenown;
+
         public RecipeData recipe = new RecipeData();
 
         [Tooltip("Chỉ Xúc tác.")]

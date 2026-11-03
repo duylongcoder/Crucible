@@ -21,8 +21,14 @@ namespace Alchemy.Persistence
 
         public FileSaveStorage(string path) => _path = path;
 
+        /// <summary>Thư mục save; null = Application.persistentDataPath. Test PlayMode trỏ sang thư mục tạm để không đụng save thật.</summary>
+        public static string Folder { get; set; }
+
         /// <summary>Save run đang chơi.</summary>
-        public static FileSaveStorage Run => new FileSaveStorage(Path.Combine(Application.persistentDataPath, "run.json"));
+        public static FileSaveStorage Run => new FileSaveStorage(Path.Combine(Folder ?? Application.persistentDataPath, "run.json"));
+
+        /// <summary>Meta giữ qua các run.</summary>
+        public static FileSaveStorage Meta => new FileSaveStorage(Path.Combine(Folder ?? Application.persistentDataPath, "meta.json"));
 
         public string Read() => File.Exists(_path) ? File.ReadAllText(_path) : null;
 

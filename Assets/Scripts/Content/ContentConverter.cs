@@ -49,11 +49,15 @@ namespace Alchemy.Content
                 Items = Items(a.items),
                 Scrap = Item(a.scrap),
                 ShopPool = Items(a.shopPool),
-                StarterKit = Items(a.starterKit),
-                Opponents = a.opponents.ConvertAll(o => new OpponentDef(o.id, o.displayName, o.battleKind, o.power)),
+                StarterKits = a.starterKits.ConvertAll(k => new StarterKitDef(k.id, k.displayName, Items(k.items), k.description, k.unlockRenown)),
+                Difficulties = a.difficulties.ConvertAll(d => new DifficultyDef(d.id, d.displayName,
+                    d.opponents.ConvertAll(o => new OpponentDef(o.id, o.displayName, o.battleKind, o.power)), d.renownPercent)),
+                RenownPerWin = a.renownPerWin,
+                RenownPerTier = a.renownPerTier,
+                RenownRunWin = a.renownRunWin,
                 Equipment = equipment,
                 Rewards = a.rewards.ConvertAll(r => new RewardDef(r.id, r.displayName, r.kind,
-                    r.item == null ? null : Item(r.item), r.amount, r.minSeason, r.maxSeason)),
+                    r.item == null ? null : Item(r.item), r.amount, r.minSeason, r.maxSeason, r.unlockRenown)),
                 Modifiers = a.modifiers.ConvertAll(m => new SeasonModifierDef(m.id, m.displayName, m.description,
                     m.scales.ConvertAll(s => new ParamScale(s.param, s.percent, s.target == null ? null : s.target.id)),
                     m.freeRerolls)),
@@ -78,7 +82,7 @@ namespace Alchemy.Content
                 e.conditions.ConvertAll(c => new EffectCondition(c.kind, c.item == null ? null : c.item.id, c.amount))));
 
             return new ItemDef(x.id, x.kind, x.tier, recipe, x.magicChance, x.displayName, x.marketPrice, x.revealLines,
-                x.description, effects);
+                x.description, effects, x.unlockRenown);
         }
     }
 }

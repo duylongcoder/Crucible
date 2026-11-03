@@ -37,6 +37,16 @@ namespace Alchemy.Core
         }
     }
 
+    /// <summary>Lựa chọn trước run. Null / để trống = bậc khó và bộ khởi đầu đầu tiên, Danh vọng 0.</summary>
+    public sealed class RunSetup
+    {
+        public DifficultyDef Difficulty { get; set; }
+        public StarterKitDef StarterKit { get; set; }
+
+        /// <summary>Danh vọng tích lũy lúc bắt đầu run; quyết định bể Chợ và chiến lợi phẩm đã mở.</summary>
+        public int Renown { get; set; }
+    }
+
     /// <summary>Kết quả trận: Presentation chỉ thấy trang bị và Thắng/Thua; Power là internal.</summary>
     public sealed class BattleResult
     {
@@ -64,9 +74,20 @@ namespace Alchemy.Core
         internal readonly List<ShopOffer> OfferList = new List<ShopOffer>();
         internal readonly List<RewardDef> RewardList = new List<RewardDef>();
 
+        // Meta mở khóa: id khoáng đã nung ra (mở cả công thức) / đã mua, nhận (chỉ mở vật phẩm). Giữ thứ tự sort (I5).
+        internal readonly List<string> BrewedList = new List<string>();
+        internal readonly List<string> AcquiredList = new List<string>();
+
         public RunDef Def { get; }
         public ulong Seed { get; }
         internal RngStreams Rng { get; }
+
+        public DifficultyDef Difficulty { get; internal set; }
+        public StarterKitDef StarterKit { get; internal set; }
+        public int Renown { get; internal set; }
+
+        /// <summary>Tier cao nhất đã nung ra trong run (cho Danh vọng).</summary>
+        public int HighestTier { get; internal set; }
 
         public int Season { get; internal set; }
         public RunPhase Phase { get; internal set; }
@@ -93,8 +114,27 @@ namespace Alchemy.Core
         public IReadOnlyList<Product> Bag => BagItems;
         public IReadOnlyList<ShopOffer> Offers => OfferList;
         public IReadOnlyList<RewardDef> RewardChoices => RewardList;
+        public IReadOnlyList<string> Brewed => BrewedList;
+        public IReadOnlyList<string> Acquired => AcquiredList;
 
-        public OpponentDef Opponent => Season >= 1 && Season <= Def.Opponents.Count ? Def.Opponents[Season - 1] : null;
+        public OpponentDef Opponent =>
+            Season >= 1 && Season <= Difficulty.Opponents.Count ? Difficulty.Opponents[Season - 1] : null;
+
+        internal void MarkBrewed(ItemDef item)
+        {
+            AddSorted(BrewedList, item.Id);
+            if (item.Tier > HighestTier)
+                HighestTier = item.Tier;
+        }
+
+        internal void MarkAcquired(ItemDef item) => AddSorted(AcquiredList, item.Id);
+
+        private static void AddSorted(List<string> list, string id)
+        {
+            var i = list.BinarySearch(id, System.StringComparer.Ordinal);
+            if (i < 0)
+                list.Insert(~i, id);
+        }
 
         public int CatalystCount
         {
@@ -120,6 +160,16 @@ namespace Alchemy.Core
             var h = new StateHash();
             h.Add(Def.Id);
             h.Add(Seed);
+            h.Add(Difficulty.Id);
+            h.Add(StarterKit.Id);
+            h.Add(Renown);
+            h.Add(HighestTier);
+            h.Add(BrewedList.Count);
+            foreach (var id in BrewedList)
+                h.Add(id);
+            h.Add(AcquiredList.Count);
+            foreach (var id in AcquiredList)
+                h.Add(id);
             h.Add(Season);
             h.Add((int)Phase);
             h.Add(BrewsUsed);

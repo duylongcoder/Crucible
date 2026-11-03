@@ -46,15 +46,21 @@ namespace Alchemy.Content
         [Tooltip("Power đối thủ ≥ ngưỡng thứ i → thêm 1 sao.")]
         public List<double> starThresholds = new List<double>();
 
+        [Header("Danh vọng")]
+        public int renownPerWin = 10;
+        public int renownPerTier = 5;
+        public int renownRunWin = 30;
+
         [Header("Content")]
         public List<StatDefAsset> stats = new List<StatDefAsset>();
         [Tooltip("Mọi vật phẩm của run (trừ phế phẩm), thứ tự cố định.")]
         public List<ItemDefAsset> items = new List<ItemDefAsset>();
         public ItemDefAsset scrap;
         public List<ItemDefAsset> shopPool = new List<ItemDefAsset>();
-        public List<ItemDefAsset> starterKit = new List<ItemDefAsset>();
-        [Tooltip("Đối thủ Mùa i ở phần tử i − 1.")]
-        public List<OpponentDefAsset> opponents = new List<OpponentDefAsset>();
+        [Tooltip("Phần tử đầu là mặc định, luôn mở.")]
+        public List<StarterKitDefAsset> starterKits = new List<StarterKitDefAsset>();
+        [Tooltip("Từ dễ tới khó; phần tử đầu luôn mở.")]
+        public List<DifficultyDefAsset> difficulties = new List<DifficultyDefAsset>();
         public List<EquipmentDefAsset> equipment = new List<EquipmentDefAsset>();
         public List<RewardDefAsset> rewards = new List<RewardDefAsset>();
         public List<SeasonModifierDefAsset> modifiers = new List<SeasonModifierDefAsset>();

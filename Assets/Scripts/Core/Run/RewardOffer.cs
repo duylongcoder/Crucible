@@ -24,7 +24,7 @@ namespace Alchemy.Core
 
         public static bool IsAvailable(RunState state, RewardDef reward)
         {
-            if (state.Season < reward.MinSeason || state.Season > reward.MaxSeason)
+            if (state.Season < reward.MinSeason || state.Season > reward.MaxSeason || reward.UnlockRenown > state.Renown)
                 return false;
             switch (reward.Kind)
             {
@@ -51,6 +51,7 @@ namespace Alchemy.Core
                 case RewardKind.RareMineral:
                 case RewardKind.Catalyst:
                     state.BagItems.Add(new Product(reward.Item));
+                    state.MarkAcquired(reward.Item);
                     break;
             }
         }

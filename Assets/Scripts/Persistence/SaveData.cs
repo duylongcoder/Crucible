@@ -11,6 +11,9 @@ namespace Alchemy.Persistence
         public int version;
         public string runDefId;
         public string seed;
+        public string difficulty;
+        public string starterKit;
+        public int renown;
         public List<CommandData> actions = new List<CommandData>();
 
         /// <summary>Số action đã áp khi chụp <see cref="snapshot"/>; khôi phục = snapshot + replay actions từ đây.</summary>
@@ -50,6 +53,19 @@ namespace Alchemy.Persistence
         public List<string> rewards = new List<string>();
         public List<int> priceFactors = new List<int>();
         public List<string> rng = new List<string>();
+        public int highestTier;
+        public List<string> brewed = new List<string>();
+        public List<string> acquired = new List<string>();
+    }
+
+    [Serializable]
+    internal sealed class MetaFile
+    {
+        public int version;
+        public int renown;
+        public int unlockedDifficulties;
+        public List<string> items = new List<string>();
+        public List<string> recipes = new List<string>();
     }
 
     [Serializable]

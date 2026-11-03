@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Linq;
 using Alchemy.Core;
-using Alchemy.Persistence;
 using Alchemy.Presentation;
 using NUnit.Framework;
 using UnityEngine;
@@ -24,19 +23,21 @@ namespace Alchemy.Tests.PlayMode
         [UnitySetUp]
         public IEnumerator SetUp()
         {
-            // GameController tự vào lại run đã lưu; test cần run mới.
-            FileSaveStorage.Run.Delete();
+            TempSaveFolder.Use();
             yield return SceneManager.LoadSceneAsync("Main");
             yield return null;
             _game = Object.FindAnyObjectByType<GameController>();
             Assert.That(_game, Is.Not.Null);
+            // Không có save → panel Run mới; bấm Bắt đầu như người chơi.
+            Click("Canvas/Game/Setup/Start");
+            Assert.That(_game.HasRun, Is.True);
         }
 
         [TearDown]
         public void TearDown()
         {
             Time.timeScale = 1f;
-            FileSaveStorage.Run.Delete();
+            TempSaveFolder.Release();
         }
 
         // ---- helpers ----
@@ -374,8 +375,13 @@ namespace Alchemy.Tests.PlayMode
                 RunPhase.Decree, RunPhase.Market, RunPhase.Placing, RunPhase.Brewing, RunPhase.Workshop, RunPhase.Battle,
             }));
             Assert.That(Find(Stage + "End/Title").GetComponent<Text>().text, Is.Not.Empty);
+            Assert.That(Find(Stage + "End/Summary").GetComponent<Text>().text, Does.Contain("Danh vọng"));
+            Assert.That(_game.Meta.State.Renown, Is.GreaterThanOrEqualTo(0));
+            Assert.That(System.IO.File.Exists(System.IO.Path.Combine(Alchemy.Persistence.FileSaveStorage.Folder, "meta.json")), Is.True);
 
             Click(Stage + "End/NewRun");
+            Assert.That(Active("Canvas/Game/Setup"), Is.Not.Null, "Run mới mở panel chọn");
+            Click("Canvas/Game/Setup/Start");
             Assert.That(_game.State.Season, Is.EqualTo(1));
             Assert.That(_game.State.Phase, Is.EqualTo(RunPhase.Decree));
             Assert.That(Active(Stage + "Decree"), Is.Not.Null);

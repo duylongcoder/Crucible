@@ -20,6 +20,7 @@ MonoBehaviour:
   magicChance: 0
   revealLines: 0
   description: "M\u1ED7i l\u1EA7n kh\u1EDBp c\xF4ng th\u1EE9c: 25% Hi\u1EC7u l\u1EF1c \xD71,5."
+  unlockRenown: 80
   recipe:
     pattern: []
     allowedAdditives: []

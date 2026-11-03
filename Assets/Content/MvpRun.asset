@@ -31,7 +31,7 @@ MonoBehaviour:
   rerollCostStep: 1
   priceFactorMinPercent: 70
   priceFactorMaxPercent: 130
-  sellPercent: 60
+  sellPercent: 75
   scrapSellPrice: 1
   modifierChancePercent: 60
   modifierPercentMin: 50
@@ -42,6 +42,9 @@ MonoBehaviour:
   - 20
   - 35
   - 55
+  renownPerWin: 10
+  renownPerTier: 5
+  renownRunWin: 30
   stats:
   - {fileID: 11400000, guid: d48f12b2698844d78871eb3032dee187, type: 2}
   - {fileID: 11400000, guid: ba87a97a2ecc9454dacf5d9a2d75470b, type: 2}
@@ -62,6 +65,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 55c33462ec0de424085d3b6cd31664bd, type: 2}
   - {fileID: 11400000, guid: 13b73fadaebd94d928d1933d5e033a9e, type: 2}
   - {fileID: 11400000, guid: 92e4bde42664f45dc9fe23bf7b3ce69a, type: 2}
+  - {fileID: 11400000, guid: f469f15a287ba4646b5d597c2a5adb28, type: 2}
   - {fileID: 11400000, guid: 671e88e9998b64fc09f87a93d5d8a306, type: 2}
   - {fileID: 11400000, guid: 255f70a841e524cb292db0ffd26eef1c, type: 2}
   - {fileID: 11400000, guid: 6083a5f1e95f64a9bae30cf2190d0a5d, type: 2}
@@ -75,6 +79,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: ed9ffb6b5dd804615a46afd0e18acfa7, type: 2}
   - {fileID: 11400000, guid: 40c87d9439d8e4809a00ef5278de1798, type: 2}
   - {fileID: 11400000, guid: 8ac96d3fc839041569ab1851e8f287aa, type: 2}
+  - {fileID: 11400000, guid: 664122d1a083f410eb4d8c9eb61dba25, type: 2}
   - {fileID: 11400000, guid: 8a43f7ecbba874104af1f8ab49457ed8, type: 2}
   - {fileID: 11400000, guid: 641342e805f1c4ffaa226f9acf68b1cc, type: 2}
   - {fileID: 11400000, guid: 742fccfa63fb54572bd5d32f574b8c53, type: 2}
@@ -90,6 +95,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 1dc1d83c7085a4cd7b059bc688330aa7, type: 2}
   - {fileID: 11400000, guid: c462270ec0b7b4d00bc19276beb27b44, type: 2}
   - {fileID: 11400000, guid: 31c22986a28014d3aaf6222b9220bd21, type: 2}
+  - {fileID: 11400000, guid: f469f15a287ba4646b5d597c2a5adb28, type: 2}
   - {fileID: 11400000, guid: b4f6f6c0485f949d1b72ea7f0604e549, type: 2}
   - {fileID: 11400000, guid: 20b4a217b1a1441a5a050141796bdca2, type: 2}
   - {fileID: 11400000, guid: 01905aa474c474dd18d89aab0ff35cbe, type: 2}
@@ -101,29 +107,14 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 90b955d9adde6463c9948df439f53da1, type: 2}
   - {fileID: 11400000, guid: fb78c01cbc20c4c7c9844b93fd2defd1, type: 2}
   - {fileID: 11400000, guid: 90a12d7f91c69433b8778053ce697cf5, type: 2}
-  starterKit:
-  - {fileID: 11400000, guid: be95da4e382574f99a3a7757ad209a9b, type: 2}
-  - {fileID: 11400000, guid: be95da4e382574f99a3a7757ad209a9b, type: 2}
-  - {fileID: 11400000, guid: be95da4e382574f99a3a7757ad209a9b, type: 2}
-  - {fileID: 11400000, guid: be95da4e382574f99a3a7757ad209a9b, type: 2}
-  - {fileID: 11400000, guid: 89424bcc4043849568d51fd4cd60c48b, type: 2}
-  - {fileID: 11400000, guid: 89424bcc4043849568d51fd4cd60c48b, type: 2}
-  - {fileID: 11400000, guid: 89424bcc4043849568d51fd4cd60c48b, type: 2}
-  - {fileID: 11400000, guid: 89424bcc4043849568d51fd4cd60c48b, type: 2}
-  - {fileID: 11400000, guid: 1dc1d83c7085a4cd7b059bc688330aa7, type: 2}
-  - {fileID: 11400000, guid: 1dc1d83c7085a4cd7b059bc688330aa7, type: 2}
-  - {fileID: 11400000, guid: c462270ec0b7b4d00bc19276beb27b44, type: 2}
-  - {fileID: 11400000, guid: b4f6f6c0485f949d1b72ea7f0604e549, type: 2}
-  - {fileID: 11400000, guid: fd8bfd48b3aa645caa613becb3aa4cc3, type: 2}
-  opponents:
-  - {fileID: 11400000, guid: fef5278ae3bb04d5797c8a713bfe91c6, type: 2}
-  - {fileID: 11400000, guid: 02bb290e7cd124f05a1d42c92a7a912b, type: 2}
-  - {fileID: 11400000, guid: 1853fc704332f4226b64d3f7e804bd82, type: 2}
-  - {fileID: 11400000, guid: d2ce95b3aae73492d8368c16e80b6dc5, type: 2}
-  - {fileID: 11400000, guid: a1d18c0ea57d74af79aebbd427a7922e, type: 2}
-  - {fileID: 11400000, guid: 4aa83785ef489490db574f51f03709d7, type: 2}
-  - {fileID: 11400000, guid: 737063fb348e7412f9baf2c758ccfe28, type: 2}
-  - {fileID: 11400000, guid: 99fc00a176743452faad7ca27f48ecb3, type: 2}
+  starterKits:
+  - {fileID: 11400000, guid: 3152b7475701842d791aba9972475a9c, type: 2}
+  - {fileID: 11400000, guid: 6be8fe976cf1440de95f2152dc196910, type: 2}
+  - {fileID: 11400000, guid: 5214a5856e9db49c1a974e29747f99aa, type: 2}
+  difficulties:
+  - {fileID: 11400000, guid: a38d583acb1194cd4b95c7fd075f2b51, type: 2}
+  - {fileID: 11400000, guid: c3d094c37222a42e396aa473ea02861c, type: 2}
+  - {fileID: 11400000, guid: 5bda767254c404c4f9d9ea7a0de4b0b9, type: 2}
   equipment:
   - {fileID: 11400000, guid: 3059c6bcebe844ac89350662ab690930, type: 2}
   - {fileID: 11400000, guid: 8f84b45c770fa4f53bb5f5fca8a5b42f, type: 2}

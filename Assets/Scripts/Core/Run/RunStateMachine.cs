@@ -13,21 +13,33 @@ namespace Alchemy.Core
         public RunState State { get; }
 
         /// <param name="checkInvariants">Chạy <see cref="InvariantChecker"/> sau mỗi Command (debug build và test).</param>
-        public RunStateMachine(RunDef def, ulong seed, bool checkInvariants = false)
+        public RunStateMachine(RunDef def, ulong seed, RunSetup setup = null, bool checkInvariants = false)
         {
             Validate(def);
             _brewer = new Brewer(def.Brew, def.Items, def.Scrap);
             _checkInvariants = checkInvariants;
 
+            var difficulty = setup?.Difficulty ?? def.Difficulties[0];
+            var kit = setup?.StarterKit ?? def.StarterKits[0];
+            var renown = setup?.Renown ?? 0;
+            if (!Contains(def.Difficulties, difficulty) || !Contains(def.StarterKits, kit) || kit.UnlockRenown > renown)
+                throw new System.ArgumentException($"Bậc khó / bộ khởi đầu không thuộc RunDef '{def.Id}' hoặc chưa mở.");
+
             State = new RunState(def, seed)
             {
+                Difficulty = difficulty,
+                StarterKit = kit,
+                Renown = renown,
                 Reputation = def.StartReputation,
                 Gold = def.StartGold,
                 BagCapacity = def.BagCapacity,
                 Grid = NewGrid(def),
             };
-            foreach (var item in def.StarterKit)
+            foreach (var item in kit.Items)
+            {
                 State.BagItems.Add(new Product(item));
+                State.MarkAcquired(item);
+            }
 
             EnterDecree();
             Verify();
@@ -139,6 +151,7 @@ namespace Alchemy.Core
             s.Gold -= offer.Price;
             offer.Sold = true;
             s.BagItems.Add(new Product(offer.Item));
+            s.MarkAcquired(offer.Item);
             return CommandResult.Ok;
         }
 
@@ -217,6 +230,8 @@ namespace Alchemy.Core
             s.Grid = NewGrid(s.Def);
             if (result.Product != null)
                 s.BagItems.Add(result.Product);
+            if (result.Product != null && result.Product.Def.IsBrewed)
+                s.MarkBrewed(result.Product.Def);
             result.GoldGained = result.Effects.Gold;
             result.Created = ApplyEffects(result.Effects);
 
@@ -395,6 +410,7 @@ namespace Alchemy.Core
                     continue;
                 var product = new Product(item);
                 s.BagItems.Add(product);
+                s.MarkAcquired(item);
                 created.Add(product);
             }
 
@@ -430,17 +446,31 @@ namespace Alchemy.Core
         {
             if (def == null)
                 throw new System.ArgumentNullException(nameof(def));
-            if (def.Brew == null || def.Scrap == null || def.Items == null || def.ShopPool == null || def.StarterKit == null
+            if (def.Brew == null || def.Scrap == null || def.Items == null || def.ShopPool == null || def.StarterKits == null
                 || def.ShopTierWeights == null || def.Rewards == null || def.Modifiers == null || def.StarThresholds == null)
                 throw new System.ArgumentException($"RunDef '{def.Id}' thiếu dữ liệu bắt buộc.");
             if (def.SeasonsPerRun < 1 || def.BrewsPerSeason < 1 || def.StartReputation < 1 || def.ShopMaxTier < 1
-                || def.BagCapacity < 0 || def.CatalystSlots < 0 || def.MaxBagCapacity < def.BagCapacity || def.StarterKit.Count > def.BagCapacity
+                || def.BagCapacity < 0 || def.CatalystSlots < 0 || def.MaxBagCapacity < def.BagCapacity
                 || def.PriceFactorMinPercent < 0 || def.PriceFactorMaxPercent < def.PriceFactorMinPercent)
                 throw new System.ArgumentException($"RunDef '{def.Id}' có tham số ngoài giới hạn.");
-            if (def.Opponents == null || def.Opponents.Count < def.SeasonsPerRun)
-                throw new System.ArgumentException($"RunDef '{def.Id}' cần {def.SeasonsPerRun} đối thủ.");
+            if (def.StarterKits.Count == 0 || def.Difficulties == null || def.Difficulties.Count == 0)
+                throw new System.ArgumentException($"RunDef '{def.Id}' cần ít nhất 1 bậc khó và 1 bộ khởi đầu.");
+            foreach (var kit in def.StarterKits)
+                if (kit?.Items == null || kit.Items.Count > def.BagCapacity)
+                    throw new System.ArgumentException($"Bộ khởi đầu của RunDef '{def.Id}' vượt sức chứa Túi.");
+            foreach (var d in def.Difficulties)
+                if (d?.Opponents == null || d.Opponents.Count < def.SeasonsPerRun)
+                    throw new System.ArgumentException($"Bậc khó của RunDef '{def.Id}' cần {def.SeasonsPerRun} đối thủ.");
             if (def.Equipment == null || def.Equipment.Count == 0)
                 throw new System.ArgumentException($"RunDef '{def.Id}' không có trang bị để rèn.");
+        }
+
+        private static bool Contains<T>(IReadOnlyList<T> list, T x) where T : class
+        {
+            foreach (var y in list)
+                if (y == x)
+                    return true;
+            return false;
         }
 
         private void Verify()

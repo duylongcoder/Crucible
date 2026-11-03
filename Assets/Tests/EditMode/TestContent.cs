@@ -78,8 +78,11 @@ namespace Alchemy.Tests.EditMode
                 Items = Items,
                 Scrap = Scrap,
                 ShopPool = new[] { Iron, Coal, Copper, Flux, Salt, Sulfur, Lens, Steel, Meteorite },
-                StarterKit = new[] { Iron, Coal, Lens },
-                Opponents = opponents,
+                StarterKits = new[] { Kit(Iron, Coal, Lens) },
+                Difficulties = new[] { new DifficultyDef("normal", "Thường", opponents) },
+                RenownPerWin = 10,
+                RenownPerTier = 5,
+                RenownRunWin = 30,
                 Equipment = new[] { new EquipmentDef("plain", "Gậy", 1, new StatWeight[0]) },
                 Rewards = new[]
                 {
@@ -89,6 +92,10 @@ namespace Alchemy.Tests.EditMode
                 Modifiers = new SeasonModifierDef[0],
             };
         }
+
+        public static StarterKitDef Kit(params ItemDef[] items) => new StarterKitDef("kit", "Bộ thử", items);
+
+        public static DifficultyDef Difficulty(params OpponentDef[] opponents) => new DifficultyDef("normal", "Thường", opponents);
 
         public const string MvpRunPath = "Assets/Content/MvpRun.asset";
 

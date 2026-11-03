@@ -19,3 +19,4 @@ MonoBehaviour:
   amount: 0
   minSeason: 4
   maxSeason: 99
+  unlockRenown: 150

@@ -45,10 +45,22 @@ namespace Alchemy.Content
                     Error($"I24: Chợ không được bán '{item.id}' (tier {item.tier}, có công thức: {item.HasRecipe}).");
             }
 
-            foreach (var item in run.starterKit)
-                Registered(item, items, "starterKit", Error);
-            if (run.starterKit.Count > run.bagCapacity)
-                Error($"Bộ khởi đầu {run.starterKit.Count} vật phẩm vượt sức chứa Túi {run.bagCapacity}.");
+            foreach (var kit in run.starterKits)
+            {
+                if (kit.items.Exists(i => i == null))
+                {
+                    Error($"Bộ khởi đầu '{kit.id}' có phần tử trống.");
+                    continue;
+                }
+
+                foreach (var item in kit.items)
+                    Registered(item, items, $"bộ khởi đầu '{kit.id}'", Error);
+                if (kit.items.Count > run.bagCapacity)
+                    Error($"Bộ khởi đầu '{kit.id}' có {kit.items.Count} vật phẩm, vượt sức chứa Túi {run.bagCapacity}.");
+            }
+
+            if (run.starterKits.Count == 0 || run.starterKits[0].unlockRenown != 0)
+                Error("Cần ít nhất 1 bộ khởi đầu; bộ đầu tiên phải mở sẵn (unlockRenown 0).");
 
             ValidateBattle(run, stats, Error);
             ValidateRewards(run, items, Error);
@@ -99,8 +111,11 @@ namespace Alchemy.Content
             Check(r.stats, "stats");
             Check(r.items, "items");
             Check(r.shopPool, "shopPool");
-            Check(r.starterKit, "starterKit");
-            Check(r.opponents, "opponents");
+            Check(r.starterKits, "starterKits");
+            Check(r.difficulties, "difficulties");
+            foreach (var d in r.difficulties ?? new List<DifficultyDefAsset>())
+                if (d != null)
+                    Check(d.opponents, $"đối thủ của bậc khó '{d.id}'");
             Check(r.equipment, "equipment");
             Check(r.rewards, "rewards");
             Check(r.modifiers, "modifiers");
@@ -135,7 +150,8 @@ namespace Alchemy.Content
             itemIds.Add(r.scrap.id);
             Unique(itemIds, "items");
             Unique(r.stats.ConvertAll(s => s.id), "stats");
-            Unique(r.opponents.ConvertAll(o => o.id), "opponents");
+            Unique(r.starterKits.ConvertAll(k => k.id), "starterKits");
+            Unique(r.difficulties.ConvertAll(d => d.id), "difficulties");
             Unique(r.equipment.ConvertAll(e => e.id), "equipment");
             Unique(r.rewards.ConvertAll(x => x.id), "rewards");
             Unique(r.modifiers.ConvertAll(m => m.id), "modifiers");
@@ -285,11 +301,21 @@ namespace Alchemy.Content
 
         private static void ValidateBattle(RunDefAsset r, HashSet<StatDefAsset> stats, System.Action<string> error)
         {
-            if (r.opponents.Count != r.seasonsPerRun)
-                error($"Cần đúng {r.seasonsPerRun} đối thủ, có {r.opponents.Count}.");
-            foreach (var o in r.opponents)
-                if (o.power < 0)
-                    error($"Đối thủ '{o.id}': Power âm.");
+            if (r.difficulties.Count == 0)
+                error("Cần ít nhất 1 bậc khó.");
+            foreach (var d in r.difficulties)
+            {
+                if (d.opponents.Count != r.seasonsPerRun)
+                    error($"Bậc khó '{d.id}': cần đúng {r.seasonsPerRun} đối thủ, có {d.opponents.Count}.");
+                if (d.renownPercent < 0)
+                    error($"Bậc khó '{d.id}': renownPercent âm.");
+                foreach (var o in d.opponents)
+                    if (o.power < 0)
+                        error($"Đối thủ '{o.id}': Power âm.");
+            }
+
+            if (r.renownPerWin < 0 || r.renownPerTier < 0 || r.renownRunWin < 0)
+                error("Tham số Danh vọng phải ≥ 0.");
 
             if (r.equipment.Count == 0)
                 error("Không có trang bị để rèn.");
@@ -387,7 +413,8 @@ namespace Alchemy.Content
         private static void ValidateReachability(RunDefAsset r, System.Action<string> error)
         {
             var reachable = new HashSet<ItemDefAsset>(r.shopPool);
-            reachable.UnionWith(r.starterKit);
+            foreach (var kit in r.starterKits)
+                reachable.UnionWith(kit.items);
             foreach (var x in r.rewards)
                 if (x.item != null)
                     reachable.Add(x.item);
